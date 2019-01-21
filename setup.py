@@ -10,7 +10,13 @@ setup(name='haste_desktop_agent',
       author='Ben Blamey',
       author_email='ben.blamey@it.uu.se',
       install_requires=[
-          'watchdog'
+          'watchdog',
+
+          'aiohttp'
+
+          # 'requests',
+          # 'requests-futures'
+
           # 'pymongo',
           # 'python-swiftclient',
           # 'keystoneauth1',
