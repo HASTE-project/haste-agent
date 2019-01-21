@@ -1,0 +1,16 @@
+.idea/workspace.xml
+.idea/usage.statistics.sml
+.idea/tasks.xml
+
+**.iml
+
+
+__pycache__
+**.egg-info
+**.tmp
+.DS_Store
+build
+.pytest_cache
+**.pyc
+dist
+test-tmp
