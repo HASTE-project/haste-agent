@@ -3,7 +3,7 @@
 rm -rf test-tmp/**
 
 # -u for unbuffered STDOUT -- some issues with flushing with async code?!
-python3 -u -m haste.desktop-agent test-tmp txt ben-mac-laptop &
+python3 -u --include txt --tag ben-mac-laptop --username ben --password password test-tmp &
 
 sleep 1
 touch test-tmp/foo1.txt

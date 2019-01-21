@@ -3,34 +3,31 @@ import time
 import logging
 import os
 from watchdog.observers import Observer
-from watchdog.events import LoggingEventHandler, FileSystemEventHandler, PatternMatchingEventHandler
+from watchdog.events import FileSystemEventHandler
 import aiohttp
 import asyncio
 import logging
-# import requests
-from requests_futures.sessions import FuturesSession
+import argparse
 import datetime
+
+# -u for unbuffered stdout (some issues with async code/autoflushing)
+ARG_PARSE_PROG_NAME = 'python3 -u -m haste.desktop-agent'
 
 WAIT_AFTER_MODIFIED_SECONDS = 1
 
-WRITTEN_FILES = set()
+# TODO: store timestamps also and clear the old ones
+ALREADY_WRITTEN_FILES = set()
+
 
 def create_stream_id():
     stream_id = datetime.datetime.today().strftime('%Y_%m_%d__%H_%M_%S') + '_' + stream_id_tag
     return stream_id
 
-#
-
-# def get_file_bytes(filename):
-#     with open(filename, "rb") as f:
-#         # get all bytes
-#         # (ideally, would stream, but files ~1-2MB.
-#         return f.read()
-
 
 async def post_file(filename):
+    auth = aiohttp.BasicAuth(login=username, password=password)
 
-    async with aiohttp.ClientSession() as session:
+    async with aiohttp.ClientSession(auth=auth) as session:
         try:
             extra_headers = {'original_filename': filename}
 
@@ -40,15 +37,6 @@ async def post_file(filename):
                 return await response.text()
         except Exception as ex:
             logging.error(f'Exception sending file: {ex}')
-
-
-# async def main():
-#         html = await fetch(session, 'http://python.org')
-#         print(html)
-
-
-# async def post(data):
-#     requests.post('http://haste-gateway.benblamey.com', 'foo')
 
 
 async def handle(event):
@@ -63,55 +51,21 @@ async def handle(event):
         logging.info(f'Ignoring file because of extension: {event}')
 
     # Assuming single-thread!
-    if src_path in WRITTEN_FILES:
+    if src_path in ALREADY_WRITTEN_FILES:
         logging.info(f'File already sent: {src_path}')
         return
 
-    WRITTEN_FILES.add(src_path)
+    ALREADY_WRITTEN_FILES.add(src_path)
 
     # Wait for any subsequent modifications to the file.
     # TODO: instead, poll the last modified time incase the file is modified again
-    try:
-        await asyncio.sleep(WAIT_AFTER_MODIFIED_SECONDS)
-    except:
-        print('--excepto--')
 
+    await asyncio.sleep(WAIT_AFTER_MODIFIED_SECONDS)
 
     logging.info(f'Sending file: {src_path}')
 
-    # loop = asyncio.get_event_loop()
-    # future1 = loop.run_in_executor(None, requests.post, 'http://haste-gateway.benblamey.com', 'foo')
-    # # future2 = loop.run_in_executor(None, requests.get, 'http://www.google.co.uk')
-    # response1 = await future1
-    # # response2 = await future2
-    # logging.debug(response1.text)
-    # # print(response2.text)
-
-
-
-
-    # loop = asyncio.get_event_loop()
-    # loop.run_until_complete(fetch('foo'))
     post = post_file(src_path)
     await post
-
-    print('foo')
-
-
-
-
-    # task = asyncio.create_task(post('foo'))
-    # await task
-    #
-    # logging.info(f' exception: {task.exception()}')
-    # logging.info(f' result: {task.result()}')
-
-    # future1 = loop.run_in_executor()
-    # # future2 = loop.run_in_executor(None, requests.get, 'http://www.google.co.uk')
-    # response1 = await future1
-    # # response2 = await future2
-    # logging.debug(response1.text)
-    # # print(response2.text)
 
 
 class HasteHandler(FileSystemEventHandler):
@@ -156,23 +110,38 @@ logging.basicConfig(level=logging.DEBUG,
                     datefmt='%Y-%m-%d %H:%M:%S')
 
 logging.info(f'current directory is :{os.getcwd()}')
-logging.info(f'command line args arg :{sys.argv}')
+logging.debug(f'command line args arg :{sys.argv}')
 
-path = sys.argv[1] if len(sys.argv) > 1 else '.'
-dot_and_extension = sys.argv[2] if len(sys.argv) > 2 else None
-stream_id_tag = sys.argv[3] if len(sys.argv) > 3 else 'default_tag'
+parser = argparse.ArgumentParser(description='Watch directory and stream new files to HASTE', prog=ARG_PARSE_PROG_NAME)
+parser.add_argument('path', metavar='path', type=str, nargs=1, help='path to watch (e.g. C:/docs/foo')
+parser.add_argument('--include', type=str, nargs='?', help='include only files with this extension')
+parser.add_argument('--tag', type=str, nargs='?', help='short ASCII tag to identify this machine (e.g. ben-laptop)')
+parser.add_argument('--username', type=str, nargs='?', help='Username for HASTE')
+parser.add_argument('--password', type=str, nargs='?', help='Password for HASTE')
 
-stream_id = create_stream_id()
+args = parser.parse_args()
 
+path = args.path[0]
+
+dot_and_extension = args.include
 if dot_and_extension is not None and not dot_and_extension.startswith('.'):
     dot_and_extension = '.' + dot_and_extension
 
-# event_handler = LoggingEventHandler()
+stream_id_tag = args.tag
+
+username = args.username
+password = args.password
+
+# TODO: generate new stream_id after long pause in new images?
+stream_id = create_stream_id()
+
 event_handler = HasteHandler()
 
 observer = Observer()
 observer.schedule(event_handler, path, recursive=True)
 observer.start()
+
+logging.info(f'began watching {path}')
 
 try:
     while True:
