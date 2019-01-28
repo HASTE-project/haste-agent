@@ -1,24 +1,19 @@
 language: python
-
 python:
 - '3.5'
 - 3.5-dev
 - '3.6'
 - 3.6-dev
 - 3.7-dev
-
 install:
 - pip install .
-
 script:
 - pytest
-
 notifications:
   email: false
-
 deploy:
   provider: pypi
   skip_existing: true
   user: benblamey
   password:
-    secure: ciotfL8VlO83SQSiBgubnyJZsv/zXlwSc2EFyOYVYH+cgqhHvXVq26hFzNi3smLlYLorcndhpprSVuBlC52qRUkz/sJldMZYU8dark6lSIJAXwh2dayvzTuimJxsnRXjARDHVp4cvfq+v+86ZKE8utlDjpPdOWqdwOu5XNK43lxapKgt2/66J9KJYBXiEqaPR7Rjqo0qBvbjKLv3FBV9FvZtBbSCXaCIUzNNS/75+NmM52KTIT7YFzAup5kjPRjhQK80JLDDv21Bf09aRkbgADL0g1nVboznbi+WX0hLenFazh5Ocxjt1kMU9i6KEl0yQQ8a2RwGDT+ph82kZFO6znQddTBVqz9A77axhXI91JEPji7VXvyAV0gZ6MdxZd7BTJ2Dhk0C0suxtS12lb6fxhKgj7obz40Efaq9gwKBHMnjunkr+dmURNYh3gs1PoXpFiY5JfG3MEo9ayp6F8cE+y9AAUXF7AwgCtIr11mEocnF8dJ4oHw5hUJ31cDJCSILiL3hgU/jpjEeVI7D7Snpv5NryDF0Z1HJxF501s7DFYrVduh/UYigxEECK9ESYtQeaZ8chcBRyTxNX3/+tGj5VSOznjrrKS7CstVfX7j3VkzbaXSeVrVDr5vhgP0dP62Z7ssId7cGGXFUF15D417RQS7crBbQtNxR+LbuEpw8WSM=
+    secure: cILY1M7wCmcSw9DjtuImVANaIFyo6FeAJkOMXU57SjXi2GGnKT839PgRLk0eYjtCsqfmrcJdaB59B3Ep1M7ifGhqJyOgyOFNIbySqrDkLQDHzskAPz0diZIDTVu1oVJMGSrQoCjsBAt8FIbv9QNVEfPIWKVYOf3wR+GIRVQbWphLO+/vbgMm9u5dWYGD3KONcRRbnIwv7Gqo37dN6MroT1GnywxU4rEnYMpMRZVnvxMod96zfdLYEAQ4SGMiKwmUCQ+DaRTqIv7/bGAytSIs37aEF0ljucjFv4At6o0biXTTXuNKGLTz6Qh+PsLB5kuPCMtGNvoBvLCZ88wz/WIPj+3O2mW1+j0ZVjuh5JiysjpScoKkQI7BmBsnJobxL4Zos1RMST+1piGGiR8yRg+yAsF8tjKbrAi7ClL+QjJY9ExOa2HNg7XIJgm3VrUmDVeLM8O9Ni1o9z6Vjg8NFn1M6Rxarja+Vr7gRdf/N60LwAnXUVfuAiIGHMgxyJ7iUfxMYSlPDo8PlgVhqP9qk49XitMK2d2N1Xskef3w5X1aEs0lLCPFmwuTMPcxsWM0lTiLw+sQzImKwYgN/sAU5+809X+VSt/GhGIwWupYYWDZDXDNVnXx3z3IFOIm+w3G4scIBCSHgS5dpfKBuuuSeO+0msphdIaLIohDYp29t4087wE=
