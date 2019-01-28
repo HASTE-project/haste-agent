@@ -11,7 +11,6 @@ setup(name='haste_desktop_agent',
       author_email='ben.blamey@it.uu.se',
       install_requires=[
           'watchdog',
-
           'aiohttp'
 
           # 'requests',

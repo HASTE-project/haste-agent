@@ -10,8 +10,6 @@ python:
 install:
 - pip install .
 
-script:
-
 notifications:
   email: false
 
