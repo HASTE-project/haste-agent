@@ -47,8 +47,9 @@ async def handle(event):
         return
 
     src_path = event.src_path
-    if dot_and_extension is not None and not src_path.endswith(dot_and_extension):
+    if (dot_and_extension is not None) and (not src_path.endswith(dot_and_extension)):
         logging.info(f'Ignoring file because of extension: {event}')
+        return
 
     # Assuming single-thread!
     if src_path in ALREADY_WRITTEN_FILES:

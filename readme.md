@@ -22,3 +22,5 @@ optional arguments:
   --password [PASSWORD]
                         Password for HASTE
 ```
+
+(Known Issue: doesn't work when targeting a mounted dir under a Windows Guest/Mac Host)

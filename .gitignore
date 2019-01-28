@@ -14,3 +14,7 @@ build
 **.pyc
 dist
 test-tmp
+Thumbs.db
+Thumbs.db.*
+
+test_root/
