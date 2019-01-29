@@ -20,9 +20,6 @@ WAIT_AFTER_MODIFIED_SECONDS = 1
 # TODO: store timestamps also and clear the old ones
 ALREADY_WRITTEN_FILES = set()
 
-HOST = f'haste-gateway.benblamey.com:80'
-#HOST = f'localhost:8080'
-
 
 def create_stream_id():
     stream_id = datetime.datetime.today().strftime('%Y_%m_%d__%H_%M_%S') + '_' + stream_id_tag
@@ -36,9 +33,9 @@ async def post_file(filename):
         try:
             extra_headers = {'X-HASTE-original_filename': filename,
                              'X-HASTE-tag': stream_id_tag,
-                             'X-HASTE-unixtime': dt.utcnow().strftime("%s")}
+                             'X-HASTE-unixtime': time.time()}
 
-            async with session.post(f'http://{HOST}/stream/{stream_id}',
+            async with session.post(f'http://{host}/stream/{stream_id}',
                                     data=open(filename, 'rb'),
                                     headers=extra_headers) as response:
                 logging.info(f'HASTE Response: {response.status}')
@@ -142,6 +139,7 @@ stream_id_tag = args.tag
 
 username = args.username
 password = args.password
+host = args.host
 
 # TODO: generate new stream_id after long pause in new images?
 stream_id = create_stream_id()
