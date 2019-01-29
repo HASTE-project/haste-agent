@@ -8,6 +8,8 @@ import aiohttp
 import asyncio
 import logging
 import argparse
+from datetime import datetime as dt
+
 import datetime
 
 # -u for unbuffered stdout (some issues with async code/autoflushing)
@@ -17,6 +19,9 @@ WAIT_AFTER_MODIFIED_SECONDS = 1
 
 # TODO: store timestamps also and clear the old ones
 ALREADY_WRITTEN_FILES = set()
+
+HOST = f'haste-gateway.benblamey.com:80'
+#HOST = f'localhost:8080'
 
 
 def create_stream_id():
@@ -29,12 +34,16 @@ async def post_file(filename):
 
     async with aiohttp.ClientSession(auth=auth) as session:
         try:
-            extra_headers = {'original_filename': filename}
+            extra_headers = {'X-HASTE-original_filename': filename,
+                             'X-HASTE-tag': stream_id_tag,
+                             'X-HASTE-unixtime': dt.utcnow().strftime("%s")}
 
-            async with session.post(f'http://haste-gateway.benblamey.com:8888/{stream_id}/',
+            async with session.post(f'http://{HOST}/stream/{stream_id}',
                                     data=open(filename, 'rb'),
                                     headers=extra_headers) as response:
+                logging.info(f'HASTE Response: {response.status}')
                 return await response.text()
+
         except Exception as ex:
             logging.error(f'Exception sending file: {ex}')
 
@@ -117,6 +126,7 @@ parser = argparse.ArgumentParser(description='Watch directory and stream new fil
 parser.add_argument('path', metavar='path', type=str, nargs=1, help='path to watch (e.g. C:/docs/foo')
 parser.add_argument('--include', type=str, nargs='?', help='include only files with this extension')
 parser.add_argument('--tag', type=str, nargs='?', help='short ASCII tag to identify this machine (e.g. ben-laptop)')
+parser.add_argument('--host', type=str, nargs='?', help='Hostname for HASTE e.g. foo.haste.com:80')
 parser.add_argument('--username', type=str, nargs='?', help='Username for HASTE')
 parser.add_argument('--password', type=str, nargs='?', help='Password for HASTE')
 
