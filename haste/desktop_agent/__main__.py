@@ -33,7 +33,7 @@ async def post_file(filename):
         try:
             extra_headers = {'X-HASTE-original_filename': filename,
                              'X-HASTE-tag': stream_id_tag,
-                             'X-HASTE-unixtime': time.time()}
+                             'X-HASTE-unixtime': str(time.time())}
 
             async with session.post(f'http://{host}/stream/{stream_id}',
                                     data=open(filename, 'rb'),
@@ -143,6 +143,7 @@ host = args.host
 
 # TODO: generate new stream_id after long pause in new images?
 stream_id = create_stream_id()
+logging.info(f'stream_id: {stream_id}')
 
 event_handler = HasteHandler()
 
