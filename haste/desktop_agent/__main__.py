@@ -13,6 +13,8 @@ from datetime import datetime as dt
 import datetime
 
 # -u for unbuffered stdout (some issues with async code/autoflushing)
+LOGGING_FORMAT_DATE = '%Y-%m-%d %H:%M:%S'
+LOGGING_FORMAT = '%(asctime)s - %(levelname)s - %(message)s'
 ARG_PARSE_PROG_NAME = 'python3 -u -m haste.desktop-agent'
 
 WAIT_AFTER_MODIFIED_SECONDS = 1
@@ -113,8 +115,8 @@ class HasteHandler(FileSystemEventHandler):
 
 
 logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s - %(message)s',
-                    datefmt='%Y-%m-%d %H:%M:%S')
+                    format=LOGGING_FORMAT,
+                    datefmt=LOGGING_FORMAT_DATE)
 
 logging.info(f'current directory is :{os.getcwd()}')
 logging.debug(f'command line args arg :{sys.argv}')
@@ -143,6 +145,13 @@ host = args.host
 
 # TODO: generate new stream_id after long pause in new images?
 stream_id = create_stream_id()
+
+# Now we have the stream ID, create a log file for this stream:
+file_logger = logging.FileHandler(f'log_{stream_id}.log')
+file_logger.setLevel(logging.DEBUG)
+file_logger.setFormatter(logging.Formatter(LOGGING_FORMAT, LOGGING_FORMAT_DATE))
+logging.getLogger('').addHandler(file_logger)
+
 logging.info(f'stream_id: {stream_id}')
 
 event_handler = HasteHandler()
