@@ -137,7 +137,7 @@ class HasteHandler(FileSystemEventHandler):
         logging.info(f'on_created() -- pushed event: {event}')
 
 
-logging.basicConfig(level=logging.DEBUG,
+logging.basicConfig(level=logging.INFO,
                     format=LOGGING_FORMAT,
                     datefmt=LOGGING_FORMAT_DATE)
 
@@ -172,7 +172,7 @@ stream_id = create_stream_id()
 
 # Now we have the stream ID, create a log file for this stream:
 file_logger = logging.FileHandler(os.path.join('logs', f'log_{stream_id}.log'))
-file_logger.setLevel(logging.DEBUG)
+file_logger.setLevel(logging.INFO)
 file_logger.setFormatter(logging.Formatter(LOGGING_FORMAT, LOGGING_FORMAT_DATE))
 logging.getLogger('').addHandler(file_logger)
 
