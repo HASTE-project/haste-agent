@@ -18,3 +18,5 @@ Thumbs.db
 Thumbs.db.*
 
 test_root/
+
+**.log

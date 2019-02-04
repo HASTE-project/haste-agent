@@ -13,6 +13,8 @@ from datetime import datetime as dt
 import datetime
 
 # -u for unbuffered stdout (some issues with async code/autoflushing)
+LOGGING_FORMAT_DATE = '%Y-%m-%d %H:%M:%S.%d3'
+LOGGING_FORMAT = '%(asctime)s - %(levelname)s - %(message)s'
 ARG_PARSE_PROG_NAME = 'python3 -u -m haste.desktop-agent'
 
 WAIT_AFTER_MODIFIED_SECONDS = 1
@@ -71,8 +73,14 @@ async def handle(event):
 
     logging.info(f'Sending file: {src_path}')
 
-    post = post_file(src_path)
-    await post
+    return await post_file(src_path)
+
+    logging.debug(f'Server response body: {post_response_text}')
+
+
+def handle_and_log_response(event):
+    response = asyncio.run(handle(event))
+    logging.debug(f'response: {response}')
 
 
 class HasteHandler(FileSystemEventHandler):
@@ -98,7 +106,7 @@ class HasteHandler(FileSystemEventHandler):
 
         # Under MacOSX -- doesn't seem to catch 'echo 'foo' > test-tmp/inner/foo5.txt'
 
-        asyncio.run(handle(event))
+        handle_and_log_response(event)
 
     def on_created(self, event):
         """Called when a file or directory is modified.
@@ -109,12 +117,12 @@ class HasteHandler(FileSystemEventHandler):
             :class:`DirModifiedEvent` or :class:`FileModifiedEvent`
         """
 
-        asyncio.run(handle(event))
+        handle_and_log_response(event)
 
 
 logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s - %(message)s',
-                    datefmt='%Y-%m-%d %H:%M:%S')
+                    format=LOGGING_FORMAT,
+                    datefmt=LOGGING_FORMAT_DATE)
 
 logging.info(f'current directory is :{os.getcwd()}')
 logging.debug(f'command line args arg :{sys.argv}')
@@ -143,6 +151,13 @@ host = args.host
 
 # TODO: generate new stream_id after long pause in new images?
 stream_id = create_stream_id()
+
+# Now we have the stream ID, create a log file for this stream:
+file_logger = logging.FileHandler(os.path.join('logs', f'log_{stream_id}.log'))
+file_logger.setLevel(logging.DEBUG)
+file_logger.setFormatter(logging.Formatter(LOGGING_FORMAT, LOGGING_FORMAT_DATE))
+logging.getLogger('').addHandler(file_logger)
+
 logging.info(f'stream_id: {stream_id}')
 
 event_handler = HasteHandler()
