@@ -182,6 +182,8 @@ logging.info(f'stream_id: {stream_id}')
 class Observer2(Observer):
 
     def on_thread_start(self):
+        super().on_thread_start()
+
         # The observer creates its own thread.
         # This thread must own the queue we use to send events back to the main thread.
         global events_to_process
