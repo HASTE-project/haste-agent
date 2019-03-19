@@ -10,7 +10,8 @@ from haste.desktop_agent.config import MAX_CONCURRENT_XFERS
 from haste.desktop_agent.http import send_file
 
 # TODO: store timestamps also and clear the old ones
-ALREADY_WRITTEN_FILES = set()
+already_written_files = set()
+events_to_process = []
 
 path, dot_and_extension, stream_id_tag, username, password, host, stream_id = initialize()
 
@@ -30,11 +31,11 @@ def put_event_on_queue(event):
     # There is no race here, because we're only using a single thread.
 
     # Since, Set is a hashset, this is O(1)
-    if src_path in ALREADY_WRITTEN_FILES:
+    if src_path in already_written_files:
         logging.info(f'File already sent: {src_path}')
         return
 
-    ALREADY_WRITTEN_FILES.add(src_path)
+    already_written_files.add(src_path)
 
     event.timestamp = time.time()
 
@@ -50,7 +51,9 @@ async def xfer_events(name):
     while True:
         try:
             event = events_to_process_mt_queue.get_nowait()
-            await events_to_process_async_queue.put(event)
+            events_to_process.append(event)
+
+            await events_to_process_async_queue.put(object())
         except queue.Empty:
             await asyncio.sleep(0.1)
 
@@ -61,7 +64,9 @@ async def worker(name, queue):
 
     try:
         while True:
-            file_system_event = await queue.get()
+            await queue.get()
+            file_system_event = events_to_process.pop()
+
             logging.debug(f'event {file_system_event} popped from queue')
             response = await send_file(file_system_event, stream_id_tag, stream_id, username, password, host)
             logging.debug(f'Server response body: {response}')
