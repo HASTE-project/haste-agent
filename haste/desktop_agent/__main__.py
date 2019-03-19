@@ -18,7 +18,7 @@ LOGGING_FORMAT_DATE = '%Y-%m-%d %H:%M:%S.%d3'
 LOGGING_FORMAT = '%(asctime)s - %(threadName)s - %(levelname)s - %(message)s'
 ARG_PARSE_PROG_NAME = 'python3 -u -m haste.desktop-agent'
 
-WAIT_AFTER_MODIFIED_SECONDS = 1
+WAIT_AFTER_FIRST_MODIFIED_SECONDS = 1
 MAX_CONCURRENT_XFERS = 10
 
 # TODO: store timestamps also and clear the old ones
@@ -53,28 +53,14 @@ async def post_file(filename):
 async def handle(event):
     logging.debug(f'handling event: {event}')
 
-    if event.is_directory:
-        logging.debug(f'skipping directory: {event.src_path}')
-        return
-
     src_path = event.src_path
-    if (dot_and_extension is not None) and (not src_path.endswith(dot_and_extension)):
-        logging.info(f'Ignoring file because of extension: {event}')
-        return
-
-    # There is no race here, because we're only using a single thread.
-
-    # Since, Set is a hashset, this is O(1)
-    if src_path in ALREADY_WRITTEN_FILES:
-        logging.info(f'File already sent: {src_path}')
-        return
-
-    ALREADY_WRITTEN_FILES.add(src_path)
 
     # Wait for any subsequent modifications to the file.
     # TODO: instead, poll the last modified time incase the file is modified again
 
-    await asyncio.sleep(WAIT_AFTER_MODIFIED_SECONDS)
+    # If the file was only just created, allow a 1 second for subsequent writes.
+    if event.timestamp + WAIT_AFTER_FIRST_MODIFIED_SECONDS > time.time():
+        await asyncio.sleep(WAIT_AFTER_FIRST_MODIFIED_SECONDS)
 
     logging.info(f'Sending file: {src_path}')
 
@@ -133,11 +119,7 @@ class HasteHandler(FileSystemEventHandler):
         """
 
         # Under MacOSX -- doesn't seem to catch 'echo 'foo' > test-tmp/inner/foo5.txt'
-
-        # Put the event on the queue.
-        # Queue never full, has infinite capacity.
-        events_to_process_mt_queue.put(event, block=True)
-        logging.info(f'on_modified() -- pushed event: {event}')
+        self.put_event_on_queue(event)
 
     def on_created(self, event):
         """Called when a file or directory is modified.
@@ -147,8 +129,32 @@ class HasteHandler(FileSystemEventHandler):
         :type event:
             :class:`DirModifiedEvent` or :class:`FileModifiedEvent`
         """
+        self.put_event_on_queue(event)
+
+    def put_event_on_queue(self, event):
         # Put the event on the queue.
         # Queue never full, has infinite capacity.
+
+        if event.is_directory:
+            logging.debug(f'skipping directory: {event.src_path}')
+            return
+
+        src_path = event.src_path
+        if (dot_and_extension is not None) and (not src_path.endswith(dot_and_extension)):
+            logging.info(f'Ignoring file because of extension: {event}')
+            return
+
+        # There is no race here, because we're only using a single thread.
+
+        # Since, Set is a hashset, this is O(1)
+        if src_path in ALREADY_WRITTEN_FILES:
+            logging.info(f'File already sent: {src_path}')
+            return
+
+        ALREADY_WRITTEN_FILES.add(src_path)
+
+        event.timestamp = time.time()
+
         events_to_process_mt_queue.put(event, block=True)
         logging.info(f'on_created() -- pushed event: {event}')
 
