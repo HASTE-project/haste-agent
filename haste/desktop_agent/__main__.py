@@ -1,4 +1,6 @@
+import queue
 import sys
+import threading
 import time
 import logging
 import os
@@ -60,6 +62,8 @@ async def handle(event):
         logging.info(f'Ignoring file because of extension: {event}')
         return
 
+    # There is no race here, because we're only using a single thread.
+
     # Since, Set is a hashset, this is O(1)
     if src_path in ALREADY_WRITTEN_FILES:
         logging.info(f'File already sent: {src_path}')
@@ -75,6 +79,17 @@ async def handle(event):
     logging.info(f'Sending file: {src_path}')
 
     return await post_file(src_path)
+
+
+async def xfer_events(name):
+    logging.debug(f'{name} started')
+
+    while True:
+        try:
+            event = events_to_process_mt_queue.get_nowait()
+            await events_to_process_async_queue.put(event)
+        except queue.Empty:
+            await asyncio.sleep(0.1)
 
 
 async def worker(name, queue):
@@ -119,9 +134,9 @@ class HasteHandler(FileSystemEventHandler):
 
         # Under MacOSX -- doesn't seem to catch 'echo 'foo' > test-tmp/inner/foo5.txt'
 
-        # Put the event on the queue. (current thread must own the queue)
+        # Put the event on the queue.
         # Queue never full, has infinite capacity.
-        events_to_process.put_nowait(event)
+        events_to_process_mt_queue.put(event, block=True)
         logging.info(f'on_modified() -- pushed event: {event}')
 
     def on_created(self, event):
@@ -132,9 +147,9 @@ class HasteHandler(FileSystemEventHandler):
         :type event:
             :class:`DirModifiedEvent` or :class:`FileModifiedEvent`
         """
-        # Put the event on the queue. (current thread must own the queue)
+        # Put the event on the queue.
         # Queue never full, has infinite capacity.
-        events_to_process.put_nowait(event)
+        events_to_process_mt_queue.put(event, block=True)
         logging.info(f'on_created() -- pushed event: {event}')
 
 
@@ -185,25 +200,27 @@ class Observer2(Observer):
     def on_thread_start(self):
         super().on_thread_start()
 
-        # The observer creates its own thread.
-        # This thread must own the queue we use to send events back to the main thread.
-        global events_to_process
-        events_to_process = asyncio.Queue()
-
 
 async def main():
-    # Create observer, which forwards events from the OS:
-    # The queue we create inside the Observer2 instance must be crested inside the loop
-    # (even though its created on a different thread). See: https://stackoverflow.com/questions/53724665
+    global events_to_process_mt_queue, events_to_process_async_queue
+
+    events_to_process_mt_queue = queue.Queue()  # thread safe queue, no async support.
+    events_to_process_async_queue = asyncio.Queue()  # async Queue, not thread safe
+
     observer = Observer2()
     event_handler = HasteHandler()
     observer.schedule(event_handler, path, recursive=True)
     observer.start()
 
     # Create workers to process events from the queue.
+    # Here, there is a single worker thread.
     tasks = []
+
+    task = asyncio.create_task(xfer_events(f'events-xfer'))
+    tasks.append(task)
+
     for i in range(MAX_CONCURRENT_XFERS):
-        task = asyncio.create_task(worker(f'worker-{i}', events_to_process))
+        task = asyncio.create_task(worker(f'worker-{i}', events_to_process_async_queue))
         tasks.append(task)
 
     logging.info(f'began watching {path}')
