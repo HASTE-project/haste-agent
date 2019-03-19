@@ -44,7 +44,8 @@ async def post_file(filename):
                 return await response.text()
 
         except Exception as ex:
-            logging.error(f'Exception sending file: {ex}')
+            logging.error(f'Exception sending file:')
+            logging.error(ex)
 
 
 async def handle(event):
