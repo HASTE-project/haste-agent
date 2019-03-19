@@ -55,15 +55,21 @@ async def xfer_events(name):
             event.file_size = ben_images.file_utils.get_file_size(event.src_path)
             events_to_process.append(event)
 
-            # The first files in the list will be sent first.
-            heuristics = [
-                # Send the oldest files first (FIFO):
-                lambda: events_to_process.sort(key=event.file_size, reverse=False),
-                # Send the newest files first (LIFO):
-                lambda: events_to_process.sort(key=event.file_size, reverse=True),
-            ]
+            if False:
+                # TODO
+                # The first files in the list will be sent first.
+                heuristics = [
+                    # Send the oldest files first (FIFO):
+                    lambda: events_to_process.sort(key=lambda e: e.timestamp, reverse=False),
+                    # Send the newest files first (LIFO):
+                    lambda: events_to_process.sort(key=lambda e: e.timestamp, reverse=True),
+                ]
 
-            heuristics[0]()
+                MODE_SMALLEST_FILES_FIRST = 0
+                MODE_LARGEST_FILES_FIRST = 1
+
+                foo = heuristics[0]
+                foo()
 
             await events_to_process_async_queue.put(object())
         except queue.Empty:
