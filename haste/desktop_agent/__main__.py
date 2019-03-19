@@ -1,10 +1,12 @@
 import queue
 import time
+from types import SimpleNamespace
+
 from watchdog.observers import Observer
 import asyncio
 import logging
 import ben_images.file_utils
-
+from haste.desktop_agent.preprocess import ffill_file
 from haste.desktop_agent.FSEvents import HasteFSEventHandler
 from haste.desktop_agent.args import initialize
 from haste.desktop_agent.config import MAX_CONCURRENT_XFERS
@@ -55,25 +57,63 @@ async def xfer_events(name):
             event.file_size = ben_images.file_utils.get_file_size(event.src_path)
             events_to_process.append(event)
 
-            if False:
-                # TODO
-                # The first files in the list will be sent first.
-                heuristics = [
-                    # Send the oldest files first (FIFO):
-                    lambda: events_to_process.sort(key=lambda e: e.timestamp, reverse=False),
-                    # Send the newest files first (LIFO):
-                    lambda: events_to_process.sort(key=lambda e: e.timestamp, reverse=True),
-                ]
-
-                MODE_SMALLEST_FILES_FIRST = 0
-                MODE_LARGEST_FILES_FIRST = 1
-
-                foo = heuristics[0]
-                foo()
+            # if False:
+            #     # TODO
+            #     # The first files in the list will be sent first.
+            #     heuristics = [
+            #         # Send the oldest files first (FIFO):
+            #         lambda: events_to_process.sort(key=lambda e: e.timestamp, reverse=False),
+            #         # Send the newest files first (LIFO):
+            #         lambda: events_to_process.sort(key=lambda e: e.timestamp, reverse=True),
+            #     ]
+            #
+            #     MODE_SMALLEST_FILES_FIRST = 0
+            #     MODE_LARGEST_FILES_FIRST = 1
+            #
+            #     foo = heuristics[0]
+            #     foo()
 
             await events_to_process_async_queue.put(object())
         except queue.Empty:
             await asyncio.sleep(0.1)
+
+
+async def preprocess_async_loop(name, queue):
+    try:
+        while True:
+            await queue.get()
+
+            # Pop from the bottom for pre-processing.
+            file_system_event = events_to_process.pop(0)
+
+            logging.info(f'preprocessing: {file_system_event.src_path}')
+            missed = False
+
+            # This is kind of crappy
+            if not hasattr(file_system_event, 'preprocessed'):
+
+                output_filepath = await ffill_file(file_system_event.src_path)
+
+                file_system_event2 = SimpleNamespace()
+                file_system_event2.timestamp = time.time()
+                file_system_event2.src_path = output_filepath
+                file_system_event2.preprocessed = True
+
+                events_to_process.append(file_system_event2)
+            else:
+                missed = True
+                events_to_process.append(file_system_event)
+
+            await events_to_process_async_queue.put(object())
+
+            queue.task_done()
+
+            if missed:
+                await asyncio.sleep(0.1)
+
+    except Exception as ex:
+        logging.error(ex)
+        raise ex
 
 
 async def worker(name, queue):
@@ -84,7 +124,7 @@ async def worker(name, queue):
         while True:
             await queue.get()
 
-            file_system_event = events_to_process.pop(0)
+            file_system_event = events_to_process.pop(-1)
 
             logging.debug(f'event {file_system_event} popped from queue')
             response = await send_file(file_system_event, stream_id_tag, stream_id, username, password, host)
@@ -112,6 +152,8 @@ async def main():
     tasks = []
 
     task = asyncio.create_task(xfer_events(f'events-xfer'))
+    tasks.append(task)
+    task = asyncio.create_task(preprocess_async_loop(f'preprocess', events_to_process_async_queue))
     tasks.append(task)
 
     for i in range(MAX_CONCURRENT_XFERS):
