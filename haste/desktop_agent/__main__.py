@@ -16,8 +16,7 @@ path, dot_and_extension, stream_id_tag, username, password, host, stream_id = in
 
 
 def put_event_on_queue(event):
-    # Put the event on the queue.
-    # Queue never full, has infinite capacity.
+    # Called on a worker thread. Put an FS event on the thread-safe queue.
 
     if event.is_directory:
         logging.debug(f'skipping directory: {event.src_path}')
@@ -39,11 +38,13 @@ def put_event_on_queue(event):
 
     event.timestamp = time.time()
 
+    # Queue never full, has infinite capacity.
     events_to_process_mt_queue.put(event, block=True)
     logging.info(f'on_created() -- pushed event: {event}')
 
 
 async def xfer_events(name):
+    # Async on the main thread. Xfer events from the thread-safe queue onto the async queue on the main thread.
     logging.debug(f'{name} started')
 
     while True:
@@ -55,6 +56,7 @@ async def xfer_events(name):
 
 
 async def worker(name, queue):
+    # Process events from the queue on the main thread.
     logging.debug(f'Worker {name} started')
 
     try:
