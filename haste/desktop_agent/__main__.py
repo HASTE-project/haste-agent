@@ -3,6 +3,7 @@ import time
 from watchdog.observers import Observer
 import asyncio
 import logging
+import ben_images.file_utils
 
 from haste.desktop_agent.FSEvents import HasteFSEventHandler
 from haste.desktop_agent.args import initialize
@@ -51,7 +52,18 @@ async def xfer_events(name):
     while True:
         try:
             event = events_to_process_mt_queue.get_nowait()
+            event.file_size = ben_images.file_utils.get_file_size(event.src_path)
             events_to_process.append(event)
+
+            # The first files in the list will be sent first.
+            heuristics = [
+                # Send the oldest files first (FIFO):
+                lambda: events_to_process.sort(key=event.file_size, reverse=False),
+                # Send the newest files first (LIFO):
+                lambda: events_to_process.sort(key=event.file_size, reverse=True),
+            ]
+
+            heuristics[0]()
 
             await events_to_process_async_queue.put(object())
         except queue.Empty:
@@ -65,7 +77,8 @@ async def worker(name, queue):
     try:
         while True:
             await queue.get()
-            file_system_event = events_to_process.pop()
+
+            file_system_event = events_to_process.pop(0)
 
             logging.debug(f'event {file_system_event} popped from queue')
             response = await send_file(file_system_event, stream_id_tag, stream_id, username, password, host)
