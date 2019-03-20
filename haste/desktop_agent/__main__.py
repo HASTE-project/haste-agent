@@ -6,7 +6,6 @@ from watchdog.observers import Observer
 import asyncio
 import logging
 import ben_images.file_utils
-from haste.desktop_agent.preprocess import ffill_file
 from haste.desktop_agent.FSEvents import HasteFSEventHandler
 from haste.desktop_agent.args import initialize
 from haste.desktop_agent.config import MAX_CONCURRENT_XFERS
@@ -80,6 +79,11 @@ async def xfer_events(name):
 
 async def preprocess_async_loop(name, queue):
     try:
+        proc = await asyncio.create_subprocess_shell(
+            'python3 -m haste.desktop_agent.preprocessor',
+            stdout=asyncio.subprocess.PIPE,
+            stdin=asyncio.subprocess.PIPE)
+
         while True:
             await queue.get()
 
@@ -92,7 +96,19 @@ async def preprocess_async_loop(name, queue):
             # This is kind of crappy
             if not hasattr(file_system_event, 'preprocessed'):
 
-                output_filepath = await ffill_file(file_system_event.src_path)
+                # output_filepath = await ffill_file(file_system_event.src_path)
+
+                output_filepath = '/tmp/' + file_system_event.src_path.split('/')[-1]
+
+                line_to_send = f"{file_system_event.src_path},{output_filepath}\n"
+
+                # add to the buffer
+                proc.stdin.write(line_to_send.encode())
+                await proc.stdin.drain()
+
+                stdoutline_duration = await proc.stdout.readline()
+                stdoutline_duration = stdoutline_duration.decode().strip()
+                logging.info(f'stdout from preprocessor: {float(stdoutline_duration)}')
 
                 file_system_event2 = SimpleNamespace()
                 file_system_event2.timestamp = time.time()
