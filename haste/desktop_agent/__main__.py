@@ -116,7 +116,7 @@ async def preprocess_async_loop(name, queue):
         raise ex
 
 
-async def worker(name, queue):
+async def worker_send_files(name, queue):
     # Process events from the queue on the main thread.
     logging.debug(f'Worker {name} started')
 
@@ -157,7 +157,7 @@ async def main():
     tasks.append(task)
 
     for i in range(MAX_CONCURRENT_XFERS):
-        task = asyncio.create_task(worker(f'worker-{i}', events_to_process_async_queue))
+        task = asyncio.create_task(worker_send_files(f'worker-{i}', events_to_process_async_queue))
         tasks.append(task)
 
     logging.info(f'began watching {path}')
