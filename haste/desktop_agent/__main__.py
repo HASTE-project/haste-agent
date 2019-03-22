@@ -13,7 +13,7 @@ from haste.desktop_agent.http import send_file
 
 # TODO: store timestamps also and clear the old ones
 already_written_files = set()
-events_to_process = []
+files_to_send = []
 
 path, dot_and_extension, stream_id_tag, username, password, host, stream_id = initialize()
 
@@ -54,25 +54,10 @@ async def xfer_events(name):
         try:
             event = events_to_process_mt_queue.get_nowait()
             event.file_size = ben_images.file_utils.get_file_size(event.src_path)
-            events_to_process.append(event)
+            await add_event(event)
 
-            # if False:
-            #     # TODO
-            #     # The first files in the list will be sent first.
-            #     heuristics = [
-            #         # Send the oldest files first (FIFO):
-            #         lambda: events_to_process.sort(key=lambda e: e.timestamp, reverse=False),
-            #         # Send the newest files first (LIFO):
-            #         lambda: events_to_process.sort(key=lambda e: e.timestamp, reverse=True),
-            #     ]
-            #
-            #     MODE_SMALLEST_FILES_FIRST = 0
-            #     MODE_LARGEST_FILES_FIRST = 1
-            #
-            #     foo = heuristics[0]
-            #     foo()
 
-            await events_to_process_async_queue.put(object())
+
         except queue.Empty:
             await asyncio.sleep(0.1)
 
@@ -85,16 +70,14 @@ async def preprocess_async_loop(name, queue):
             stdin=asyncio.subprocess.PIPE)
 
         while True:
-            await queue.get()
+            file_system_event = await pop_event(queue, False)
 
             # Pop from the bottom for pre-processing.
-            file_system_event = events_to_process.pop(0)
 
-            logging.info(f'preprocessing: {file_system_event.src_path}')
-            missed = False
+            if file_system_event is not None:
+                logging.info(f'preprocessing: {file_system_event.src_path}')
 
-            # This is kind of crappy
-            if not hasattr(file_system_event, 'preprocessed'):
+                missed = False
 
                 # output_filepath = await ffill_file(file_system_event.src_path)
 
@@ -113,23 +96,55 @@ async def preprocess_async_loop(name, queue):
                 file_system_event2 = SimpleNamespace()
                 file_system_event2.timestamp = time.time()
                 file_system_event2.src_path = output_filepath
+                file_system_event2.file_size = ben_images.file_utils.get_file_size(output_filepath)
                 file_system_event2.preprocessed = True
 
-                events_to_process.append(file_system_event2)
+                event_to_re_add = file_system_event2
             else:
                 missed = True
-                events_to_process.append(file_system_event)
+                event_to_re_add = file_system_event
 
-            await events_to_process_async_queue.put(object())
+            await add_event(event_to_re_add)
 
             queue.task_done()
 
             if missed:
-                await asyncio.sleep(0.1)
+                await asyncio.sleep(0.05)
 
     except Exception as ex:
         logging.error(ex)
         raise ex
+
+
+async def add_event(event_to_re_add):
+    if event_to_re_add is not None:
+        files_to_send.append(event_to_re_add)
+
+    return await events_to_process_async_queue.put(object())
+
+
+async def pop_event(queue, for_preprocessing):
+    await queue.get()
+
+    if for_preprocessing:
+
+        # key = lambda e: -e.file_size  # Preprocess largest first
+        key = lambda e: (hasattr(e, 'preprocessed'), e.file_size)  # Preprocess smallest first
+
+        files_to_send.sort(key=key)
+
+        if hasattr(files_to_send[0], 'preprocessed'):
+            # called will call queue.push() to rebalance
+            return None
+    else:
+        # key = lambda e: (not hasattr(e, 'preprocessed'), e.file_size)  # Send preprocessed, then smallest first
+        key = lambda e: (not hasattr(e, 'preprocessed'), -e.file_size)  # Send preprocessed, then largest first
+
+        files_to_send.sort(key=key)
+
+    file_system_event = files_to_send.pop(0)
+
+    return file_system_event
 
 
 async def worker_send_files(name, queue):
@@ -138,9 +153,7 @@ async def worker_send_files(name, queue):
 
     try:
         while True:
-            await queue.get()
-
-            file_system_event = events_to_process.pop(-1)
+            file_system_event = await pop_event(queue, False)
 
             logging.debug(f'event {file_system_event} popped from queue')
             response = await send_file(file_system_event, stream_id_tag, stream_id, username, password, host)
