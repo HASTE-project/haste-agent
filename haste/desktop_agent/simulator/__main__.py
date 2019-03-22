@@ -4,9 +4,14 @@ import shutil
 import logging
 
 SOURCE_DIR = '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/'
-TARGET_DIR = '/Users/benblamey/projects/haste/haste-desktop-agent-images/target/'
 EXTENSION = '.png'
-FREQUENCY = 20  # looking at the filenames, 2019_02_04__11_34_55_vironova looks like 20Hz
+
+# SOURCE_DIR = '/Users/benblamey/projects/haste/images/dummy_files/empty_files/'
+# EXTENSION = '.txt'
+
+
+TARGET_DIR = '/Users/benblamey/projects/haste/haste-desktop-agent-images/target/'
+FREQUENCY = 10  # looking at the filenames, 2019_02_04__11_34_55_vironova looks like 20Hz
 
 if __name__ == '__main__':
     LOGGING_FORMAT_DATE = '%Y-%m-%d %H:%M:%S.%d3'

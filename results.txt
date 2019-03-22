@@ -1,1 +1,68 @@
-Preprocess: smallest first,  send: preprocessed, then largest first.
+March 22:
+
+At Work. With Golden ('cheating'):
+
+2019-03-22 11:03:48.223 - Thread-1 - INFO - on_created() -- pushed event: <FileCreatedEvent: src_path='/Users/benblamey/projects/haste/haste-desktop-agent-images/target/strm_2019_02_04__11_34_55_vironova_ts_1549276962.4200642.png'>
+2019-03-22 11:03:48.223 - Thread-1 - INFO - on_created() -- pushed event: <FileCreatedEvent: src_path='/Users/benblamey/projects/haste/haste-desktop-agent-images/target/strm_2019_02_04__11_34_55_vironova_ts_1549276963.6019998.png'>
+2019-03-22 11:03:48.223 - Thread-1 - INFO - on_created() -- pushed event: <FileCreatedEvent: src_path='/Users/benblamey/projects/haste/haste-desktop-agent-images/target/strm_2019_02_04__11_34_55_vironova_ts_1549276964.714675.png'>
+...
+2019-03-22 11:06:12.223 - MainThread - INFO - Sending file: /tmp/strm_2019_02_04__11_34_55_vironova_ts_1549277344.6376872.png
+2019-03-22 11:06:12.223 - MainThread - INFO - Sending file: /tmp/strm_2019_02_04__11_34_55_vironova_ts_1549277240.4972084.png
+2019-03-22 11:06:12.223 - MainThread - INFO - HASTE Response: 412
+2019-03-22 11:06:12.223 - MainThread - INFO - HASTE Response: 412
+
+12+2*60+12 = 144
+(sending at 5Hz, preprocessing at 3Hz, sending at 20Hz)
+
+
+
+2019-03-22 11:54:22.223 - Thread-1 - INFO - on
+120+22=142
+2019-03-22 11:56:44.223 - MainThread - INFO - HASTE Response: 412
+2019-03-22 11:56:44.223 - MainThread - INFO - HASTE Response: 412
+
+------
+
+MArch 22:
+
+At work. By timestamp (baseline):
+
+
+2019-03-22 11:10:09.223 - Thread-1 - INFO - on_created() -- pushed event: <FileCreatedEvent: src_path='/Users/benblamey/projects/haste/haste-desktop-agent-images/target/strm_2019_02_04__11_34_55_vironova_ts_1549276962.4200642.png'>
+2019-03-22 11:10:09.223 - Thread-1 - INFO - on_created() -- pushed event: <FileCreatedEvent: src_path='/Users/benblamey/projects/haste/haste-desktop-agent-images/target/strm_2019_02_04__11_34_55_vironova_ts_1549276963.6019998.png'>
+2019-03-22 11:10:09.223 - Thread-1 - INFO - on_created() -- pushed event: <FileCreatedEvent: src_path='/Users/benblamey/projects/haste/haste-desktop-agent-images/target/strm_2019_02_04__11_34_55_vironova_ts_1549276964.714675.png'>
+...
+2019-03-22 11:12:32.223 - MainThread - INFO - HASTE Response: 412
+2019-03-22 11:12:32.223 - MainThread - INFO - HASTE Response: 412
+2019-03-22 11:12:32.223 - MainThread - INFO - HASTE Response: 412
+
+2*60+32-9 = 141
+
+
+------
+Sending Greyscale:
+
+2019-03-22 12:12:25.223 - MainThread - INFO - current directory is :/Users/benblamey/projects/haste/haste-agent
+2019-03-22 12:15:05.223 - MainThread - INFO - HASTE Response: 412
+=160
+
+Sending ffill:
+2019-03-22 12:34:50.223 - Thread-1 - INFO - on_created
+2019-03-22 12:37:37.223 - MainThread - INFO - HASTE Response: 412
+2*60+10+37
+=167
+
+Sending ffill, 20 concurrent xfers...
+
+2019-03-22 12:42:58.223 - Thread-1 - INFO - on_created() -- pushed event: <FileCreatedEvent:
+2019-03-22 12:46:25.223 - MainThread - INFO - HASTE Response: 412
+
+120+25+2
+=147
+
+
+With empty files:
+
+never any queue at all. completes as soon as source finished.
+
+---

@@ -36,7 +36,7 @@ async def send_file(event, stream_id_tag, stream_id, username, password, host):
     # TODO: instead, poll the last modified time incase the file is modified again
 
     # If the file was only just created, allow a 1 second for subsequent writes.
-    if event.timestamp + WAIT_AFTER_FIRST_MODIFIED_SECONDS > time.time():
-        await asyncio.sleep(WAIT_AFTER_FIRST_MODIFIED_SECONDS)
+    # if event.timestamp + WAIT_AFTER_FIRST_MODIFIED_SECONDS > time.time():
+    #     await asyncio.sleep(WAIT_AFTER_FIRST_MODIFIED_SECONDS)
 
     return await post_file(event.src_path, stream_id_tag, stream_id, username, password, host)
