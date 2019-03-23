@@ -9,7 +9,7 @@ import logging
 import ben_images.file_utils
 from haste.desktop_agent.FSEvents import HasteFSEventHandler
 from haste.desktop_agent.args import initialize
-from haste.desktop_agent.config import MAX_CONCURRENT_XFERS
+from haste.desktop_agent.config import MAX_CONCURRENT_XFERS, QUIT_AFTER
 from haste.desktop_agent.benhttp import send_file
 
 # TODO: store timestamps also and clear the old ones
@@ -21,12 +21,38 @@ timestamp_first_event = -1
 stats_total_bytes_sent = 0
 stats_preprocessed_files_sent = 0
 stats_not_preprocessed_files_sent = 0
+stats_events_pushed_first_queue = 0
+stats_events_pushed_second_queue_preprocessed = 0
+stats_events_pushed_second_queue_raw = 0
 
-path, dot_and_extension, stream_id_tag, username, password, host, stream_id = initialize()
+path, dot_and_extension, stream_id_tag, username, password, host, stream_id, x_preprocessing_cores = initialize()
+
+time_last_full_dir_listing = -1
+
+import os
 
 
 def put_event_on_queue(event):
-    global timestamp_first_event
+    global time_last_full_dir_listing
+    put_event_on_queue2(event)
+
+    # There are some issues with the watchdog -- sometimes files seem to be missed.
+    # As a workaround, do a full directory listing each second.
+    now = time.time()
+    if time_last_full_dir_listing + 1 < now:
+        filenames = os.listdir(path)
+
+        for filename in filenames:
+            new_event = SimpleNamespace()
+            new_event.src_path = path + filename
+            new_event.is_directory = False
+            if new_event.src_path in already_written_files:
+                continue
+            put_event_on_queue2(new_event)
+
+
+def put_event_on_queue2(event):
+    global timestamp_first_event, stats_events_pushed_first_queue
     # Called on a worker thread. Put an FS event on the thread-safe queue.
 
     if event.is_directory:
@@ -54,7 +80,11 @@ def put_event_on_queue(event):
 
     # Queue never full, has infinite capacity.
     events_to_process_mt_queue.put(event, block=True)
-    logging.info(f'on_created() -- pushed event: {event}')
+
+    stats_events_pushed_first_queue += 1
+
+    logging.info(
+        f'on_created() -- pushed event: {event} -- stats_events_pushed_first_queue: {stats_events_pushed_first_queue}')
 
 
 async def xfer_events_from_fs(name):
@@ -65,6 +95,10 @@ async def xfer_events_from_fs(name):
         try:
             event = events_to_process_mt_queue.get_nowait()
             await push_event(event)
+
+
+
+
         except queue.Empty:
             await asyncio.sleep(0.01)
 
@@ -111,9 +145,9 @@ async def preprocess_async_loop(name, queue):
                 event_to_re_add = file_system_event
 
             await push_event(event_to_re_add)
-            queue.task_done()
+            # queue.task_done()
 
-            # We've preprocessed everything. just re-add the original event and 'sleep' a little.
+            # We've preprocessed everything for now. just re-add the original event and 'sleep' a little.
             if file_system_event.preprocessed:
                 await asyncio.sleep(0.01)
 
@@ -122,8 +156,24 @@ async def preprocess_async_loop(name, queue):
         raise ex
 
 
+def log_queue_info():
+    # Log info about the present state of the queue
+    count_preprocessed = len(list(filter(lambda f: f.preprocessed, files_to_send)))
+    count_not_preprocessed = len(files_to_send) - count_preprocessed
+    logging.info(f'PLOT - {time.time()} - {count_preprocessed} - {count_not_preprocessed}')
+
+
 async def push_event(event_to_re_add):
-    global needs_sorting
+    global needs_sorting, stats_events_pushed_second_queue_preprocessed, stats_events_pushed_second_queue_raw
+
+    if event_to_re_add.preprocessed:
+        stats_events_pushed_second_queue_preprocessed += 1
+    else:
+        stats_events_pushed_second_queue_raw += 1
+
+    logging.info(
+        f'push_event() - raw:{stats_events_pushed_second_queue_raw} - preproc:{stats_events_pushed_second_queue_preprocessed}')
+
     event_to_re_add.file_size = ben_images.file_utils.get_file_size(event_to_re_add.src_path)
     files_to_send.append(event_to_re_add)
     needs_sorting = True
@@ -133,25 +183,21 @@ async def push_event(event_to_re_add):
     return await events_to_process_async_queue.put(object())
 
 
-def log_queue_info():
-    count_preprocessed = len(list(filter(lambda f: f.preprocessed, files_to_send)))
-    count_not_preprocessed = len(files_to_send) - count_preprocessed
-    logging.info(f'PLOT - {time.time()} - {count_preprocessed} - {count_not_preprocessed}')
-
-
 async def pop_event(queue, for_preprocessing):
     global needs_sorting
 
     await queue.get()
 
     if needs_sorting:
-
         start = time.time()
 
         # "False sorts first"
         # key = lambda e: (not e.preprocessed, -e.file_size)  # preprocessed=True, then largest first
+
+        # with Ground Truth. Prioritize where we know we can reduce the bytes the least.
         key = lambda e: (e.preprocessed,
-                         -e.golden_bytes_reduction)  # with Ground Truth. Prioritize where we know we can reduce the bytes the least. preprocessed=False
+                         -e.golden_bytes_reduction)
+
         # key = lambda e: (not e.preprocessed, e.timestamp)
 
         files_to_send.sort(key=key)
@@ -164,11 +210,7 @@ async def pop_event(queue, for_preprocessing):
     if for_preprocessing:
         result = files_to_send.pop(0)
     else:
-        # Prioritize sending a pre-processed file, else the one with lowest prio for pre-processing.
-        if files_to_send[0].preprocessed:
-            result = files_to_send.pop(0)
-        else:
-            result = files_to_send.pop(-1)
+        result = files_to_send.pop(-1)
 
     log_queue_info()
 
@@ -193,13 +235,19 @@ async def worker_send_files(name, queue):
             else:
                 stats_not_preprocessed_files_sent += 1
 
-            if len(files_to_send) == 0:
-                logging.info(f'Queue_is_empty. Duration since first event: {time.time() - timestamp_first_event}')
-                logging.info(
-                    f'Queue_is_empty. total_bytes_sent: {stats_total_bytes_sent} preprocessed_files_sent: {stats_preprocessed_files_sent} raw_files_sent: {stats_not_preprocessed_files_sent}')
+            logging.debug(f'Server response body: {response}')
+            queue.task_done()
 
-                logging.debug(f'Server response body: {response}')
-                queue.task_done()
+            logging.info(
+                f'total_bytes_sent: {stats_total_bytes_sent} preprocessed_files_sent: {stats_preprocessed_files_sent} raw_files_sent: {stats_not_preprocessed_files_sent}')
+
+            # Benchmarking hack
+            if len(
+                    files_to_send) == 0 and stats_not_preprocessed_files_sent + stats_preprocessed_files_sent == QUIT_AFTER:
+                logging.info(
+                    f'Queue_is_empty. Duration since first event: {time.time() - timestamp_first_event} - total_bytes_sent: {stats_total_bytes_sent}')
+                quit()
+
     except Exception as ex:
         logging.error(f'Exception on {name}: {ex}')
 
@@ -223,8 +271,8 @@ async def main():
     task = asyncio.create_task(xfer_events_from_fs(f'events-xfer'))
     tasks.append(task)
 
-    if False:
-        task = asyncio.create_task(preprocess_async_loop(f'preprocess', events_to_process_async_queue))
+    for i in range(x_preprocessing_cores):
+        task = asyncio.create_task(preprocess_async_loop(f'preprocess-{i}', events_to_process_async_queue))
         tasks.append(task)
 
     for i in range(MAX_CONCURRENT_XFERS):
@@ -243,4 +291,5 @@ async def main():
     observer.join()
 
 
-asyncio.run(main())
+if __name__ == '__main__':
+    asyncio.run(main())

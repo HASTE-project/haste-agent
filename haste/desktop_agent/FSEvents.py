@@ -33,6 +33,16 @@ class HasteFSEventHandler(FileSystemEventHandler):
         # Under MacOSX -- doesn't seem to catch 'echo 'foo' > test-tmp/inner/foo5.txt'
         self.callback(event)
 
+    def on_moved(self, event):
+        """Called when a file or a directory is moved or renamed.
+
+        :param event:
+            Event representing file/directory movement.
+        :type event:
+            :class:`DirMovedEvent` or :class:`FileMovedEvent`
+        """
+        self.callback(event)
+
     def on_created(self, event):
         """Called when a file or directory is modified.
 

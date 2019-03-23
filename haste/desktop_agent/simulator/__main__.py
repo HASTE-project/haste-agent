@@ -1,21 +1,17 @@
+import sys
 import time
 import os
 import shutil
 import logging
 
-SOURCE_DIR = '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/'
-EXTENSION = '.png'
-
-# SOURCE_DIR = '/Users/benblamey/projects/haste/images/dummy_files/empty_files/'
-# EXTENSION = '.txt'
-
-
-TARGET_DIR = '/Users/benblamey/projects/haste/haste-desktop-agent-images/target/'
-FREQUENCY = 10  # looking at the filenames, 2019_02_04__11_34_55_vironova looks like 20Hz
+from haste.desktop_agent import config
+from haste.desktop_agent.config import EXTENSION, TARGET_DIR, FREQUENCY
 
 if __name__ == '__main__':
+    SOURCE_DIR = sys.argv[1]
+
     LOGGING_FORMAT_DATE = '%Y-%m-%d %H:%M:%S.%d3'
-    LOGGING_FORMAT = '%(asctime)s - %(threadName)s - %(levelname)s - %(message)s'
+    LOGGING_FORMAT = '%(asctime)s - SIMULATOR - %(threadName)s - %(levelname)s - %(message)s'
 
     logging.basicConfig(level=logging.INFO,
                         format=LOGGING_FORMAT,
@@ -27,13 +23,17 @@ if __name__ == '__main__':
         os.remove(TARGET_DIR + file_to_delete)
 
     logging.info('done... about to start stream...')
-    time.sleep(5)
+    time.sleep(10)
 
     filenames = os.listdir(SOURCE_DIR)
 
     filenames = filter(lambda filename: filename.endswith(EXTENSION), filenames)
 
     filenames = list(sorted(filenames))
+    filenames = filenames[:1+config.QUIT_AFTER]
+
+    assert len(filenames) == config.QUIT_AFTER
+
 
     for filename in filenames:
         time_last_copy_initiated = time.time()
@@ -45,6 +45,6 @@ if __name__ == '__main__':
         pause = time_last_copy_initiated + 1 / FREQUENCY - time.time()
 
         if pause < 0:
-            logging.warn(f'overran by {pause} seconds')
+            logging.warning(f'overran by {pause} seconds')
         else:
             time.sleep(pause)

@@ -4,7 +4,7 @@ import logging
 import os
 import sys
 
-from haste.desktop_agent.config import LOGGING_FORMAT, LOGGING_FORMAT_DATE
+from haste.desktop_agent.config import LOGGING_FORMAT_AGENT, LOGGING_FORMAT_DATE, FREQUENCY
 
 
 def parse_args():
@@ -16,6 +16,10 @@ def parse_args():
     parser.add_argument('--host', type=str, nargs='?', help='Hostname for HASTE e.g. foo.haste.com:80')
     parser.add_argument('--username', type=str, nargs='?', help='Username for HASTE')
     parser.add_argument('--password', type=str, nargs='?', help='Password for HASTE')
+
+    parser.add_argument('--x-preprocessing-cores', default=1, type=int)
+
+
 
     args = parser.parse_args()
 
@@ -33,7 +37,7 @@ def create_stream_id(stream_id_tag):
 def initialize():
 
     logging.basicConfig(level=logging.INFO,
-                        format=LOGGING_FORMAT,
+                        format=LOGGING_FORMAT_AGENT,
                         datefmt=LOGGING_FORMAT_DATE)
 
     logging.info(f'current directory is :{os.getcwd()}')
@@ -51,17 +55,23 @@ def initialize():
     password = args.password
     host = args.host
 
+    x_preprocessing_cores= args.x_preprocessing_cores
+
     # TODO: generate new stream_id after long pause in new images?
 
     stream_id = create_stream_id(stream_id_tag)
 
     # Now we have the stream ID, create a log file for this stream:
 
-    file_logger = logging.FileHandler(os.path.join('logs', f'log_{stream_id}.log'))
+    file_logger = logging.FileHandler(os.path.join('logs', f'agent_log_{stream_id}.log'))
     file_logger.setLevel(logging.INFO)
-    file_logger.setFormatter(logging.Formatter(LOGGING_FORMAT, LOGGING_FORMAT_DATE))
+    file_logger.setFormatter(logging.Formatter(LOGGING_FORMAT_AGENT, LOGGING_FORMAT_DATE))
 
     logging.getLogger('').addHandler(file_logger)
     logging.info(f'stream_id: {stream_id}')
 
-    return path, dot_and_extension, stream_id_tag, username, password, host, stream_id
+    logging.info(f'preprocessing_cores: {x_preprocessing_cores}')
+
+    logging.info(f'simulator_frequency (incase simulator used): {FREQUENCY}')
+
+    return path, dot_and_extension, stream_id_tag, username, password, host, stream_id, x_preprocessing_cores
