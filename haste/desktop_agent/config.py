@@ -17,3 +17,4 @@ EXTENSION = '.png'
 TARGET_DIR = '/Users/benblamey/projects/haste/haste-desktop-agent-images/target/'
 FREQUENCY = 20  # looking at the filenames, 2019_02_04__11_34_55_vironova looks like 20Hz
 QUIT_AFTER = 759
+DELETE = True

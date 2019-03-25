@@ -40,8 +40,8 @@ def initialize():
                         format=LOGGING_FORMAT_AGENT,
                         datefmt=LOGGING_FORMAT_DATE)
 
-    logging.info(f'current directory is :{os.getcwd()}')
-    logging.debug(f'command line args arg :{sys.argv}')
+    logging.info(f'current directory is: {os.getcwd()}')
+    logging.debug(f'command line args arg: {sys.argv}')
 
     args = parse_args()
     path = args.path[0]

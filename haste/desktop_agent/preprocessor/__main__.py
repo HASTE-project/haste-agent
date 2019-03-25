@@ -19,11 +19,15 @@ def convert_file(input_filepath, output_filepath):
 
 
 if __name__ == '__main__':
-    while True:
-        input_filepath, output_filepath = input().split(',')
+    try:
+        while True:
+            input_filepath, output_filepath = input().split(',')
 
-        start = time.time()
+            start = time.time()
 
-        convert_file(input_filepath, output_filepath)
+            convert_file(input_filepath, output_filepath)
 
-        print(time.time() - start)
+            print(time.time() - start)
+    except EOFError:
+        # parent died. die
+        pass

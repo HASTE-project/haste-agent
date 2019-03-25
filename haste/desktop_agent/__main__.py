@@ -1,6 +1,9 @@
 import queue
+import sys
+import threading
 import time
 from types import SimpleNamespace
+import os
 
 from haste.desktop_agent.golden import get_golden_prio_for_filename
 from watchdog.observers import Observer
@@ -9,11 +12,11 @@ import logging
 import ben_images.file_utils
 from haste.desktop_agent.FSEvents import HasteFSEventHandler
 from haste.desktop_agent.args import initialize
-from haste.desktop_agent.config import MAX_CONCURRENT_XFERS, QUIT_AFTER
+from haste.desktop_agent.config import MAX_CONCURRENT_XFERS, QUIT_AFTER, DELETE
 from haste.desktop_agent.benhttp import send_file
 
 # TODO: store timestamps also and clear the old ones
-already_written_files = set()
+already_written_filenames = set()
 files_to_send = []
 needs_sorting = False
 timestamp_first_event = -1
@@ -26,32 +29,41 @@ stats_events_pushed_second_queue_preprocessed = 0
 stats_events_pushed_second_queue_raw = 0
 
 path, dot_and_extension, stream_id_tag, username, password, host, stream_id, x_preprocessing_cores = initialize()
+assert path.endswith('/')
 
 time_last_full_dir_listing = -1
 
-import os
+
+def thread_worker_poll_fs():
+    global time_last_full_dir_listing
+
+    try:
+        while True:
+
+            # There are some issues with the watchdog -- sometimes files seem to be missed.
+            # As a workaround, do a full directory listing each second.
+            pause = time_last_full_dir_listing + 1 - time.time()
+            if time_last_full_dir_listing > 0 and pause > 0:
+                time.sleep(pause)
+
+            filenames = os.listdir(path)
+            time_last_full_dir_listing = time.time()
+
+            for filename in filenames:
+                if filename in already_written_filenames:
+                    continue
+
+                filenames.sort() # timestamp at front of filename
+
+                new_event = SimpleNamespace()
+                new_event.src_path = path + filename
+                new_event.is_directory = False
+                put_event_on_queue(new_event)
+    except Exception as ex:
+        logging.error(f'exception on polling thread: {ex}')
 
 
 def put_event_on_queue(event):
-    global time_last_full_dir_listing
-    put_event_on_queue2(event)
-
-    # There are some issues with the watchdog -- sometimes files seem to be missed.
-    # As a workaround, do a full directory listing each second.
-    now = time.time()
-    if time_last_full_dir_listing + 1 < now:
-        filenames = os.listdir(path)
-
-        for filename in filenames:
-            new_event = SimpleNamespace()
-            new_event.src_path = path + filename
-            new_event.is_directory = False
-            if new_event.src_path in already_written_files:
-                continue
-            put_event_on_queue2(new_event)
-
-
-def put_event_on_queue2(event):
     global timestamp_first_event, stats_events_pushed_first_queue
     # Called on a worker thread. Put an FS event on the thread-safe queue.
 
@@ -61,17 +73,18 @@ def put_event_on_queue2(event):
 
     src_path = event.src_path
     if (dot_and_extension is not None) and (not src_path.endswith(dot_and_extension)):
-        logging.info(f'Ignoring file because of extension: {event}')
+        logging.debug(f'Ignoring file because of extension: {event}')
         return
 
     # Set is a hashset, this is O(1)
-    if src_path in already_written_files:
-        logging.info(f'File already sent: {src_path}')
+    if src_path.split('/')[-1] in already_written_filenames:
+        logging.debug(f'File already sent: {src_path}')
         return
 
-    already_written_files.add(src_path)
+    already_written_filenames.add(src_path.split('/')[-1])
 
     event.timestamp = time.time()
+
     if timestamp_first_event < 0:
         timestamp_first_event = event.timestamp
 
@@ -84,23 +97,22 @@ def put_event_on_queue2(event):
     stats_events_pushed_first_queue += 1
 
     logging.info(
-        f'on_created() -- pushed event: {event} -- stats_events_pushed_first_queue: {stats_events_pushed_first_queue}')
+        f'put_event_on_queue() -- pushed event: {event.src_path} -- stats_events_pushed_first_queue: {stats_events_pushed_first_queue}')
 
 
 async def xfer_events_from_fs(name):
     # Async on the main thread. Xfer events from the thread-safe queue onto the async queue on the main thread.
     logging.debug(f'{name} started')
 
-    while True:
-        try:
-            event = events_to_process_mt_queue.get_nowait()
-            await push_event(event)
-
-
-
-
-        except queue.Empty:
-            await asyncio.sleep(0.01)
+    try:
+        while True:
+            try:
+                event = events_to_process_mt_queue.get_nowait()
+                await push_event(event)
+            except queue.Empty:
+                await asyncio.sleep(0.01)
+    except Exception as ex:
+        print(ex)
 
 
 async def preprocess_async_loop(name, queue):
@@ -114,7 +126,7 @@ async def preprocess_async_loop(name, queue):
         while True:
             file_system_event = await pop_event(queue, True)
 
-            if not file_system_event.preprocessed:
+            if file_system_event is not None:
                 logging.info(f'preprocessing: {file_system_event.src_path}')
 
                 output_filepath = '/tmp/' + file_system_event.src_path.split('/')[-1]
@@ -140,12 +152,15 @@ async def preprocess_async_loop(name, queue):
                 count += 1
                 logging.info(f'preprocessed {count} files')
 
+                if DELETE:
+                    os.unlink(file_system_event.src_path)
+
             else:
                 # We've preprocessed everything. just re-add the original event.
                 event_to_re_add = file_system_event
 
             await push_event(event_to_re_add)
-            # queue.task_done()
+            queue.task_done()
 
             # We've preprocessed everything for now. just re-add the original event and 'sleep' a little.
             if file_system_event.preprocessed:
@@ -166,19 +181,20 @@ def log_queue_info():
 async def push_event(event_to_re_add):
     global needs_sorting, stats_events_pushed_second_queue_preprocessed, stats_events_pushed_second_queue_raw
 
-    if event_to_re_add.preprocessed:
-        stats_events_pushed_second_queue_preprocessed += 1
-    else:
-        stats_events_pushed_second_queue_raw += 1
+    if event_to_re_add is not None:
+        if event_to_re_add.preprocessed:
+            stats_events_pushed_second_queue_preprocessed += 1
+        else:
+            stats_events_pushed_second_queue_raw += 1
 
-    logging.info(
-        f'push_event() - raw:{stats_events_pushed_second_queue_raw} - preproc:{stats_events_pushed_second_queue_preprocessed}')
+        logging.info(
+            f'push_event() - raw:{stats_events_pushed_second_queue_raw}')
 
-    event_to_re_add.file_size = ben_images.file_utils.get_file_size(event_to_re_add.src_path)
-    files_to_send.append(event_to_re_add)
-    needs_sorting = True
+        event_to_re_add.file_size = ben_images.file_utils.get_file_size(event_to_re_add.src_path)
+        files_to_send.append(event_to_re_add)
+        needs_sorting = True
 
-    log_queue_info()
+        log_queue_info()
 
     return await events_to_process_async_queue.put(object())
 
@@ -208,7 +224,10 @@ async def pop_event(queue, for_preprocessing):
         needs_sorting = False
 
     if for_preprocessing:
-        result = files_to_send.pop(0)
+        if files_to_send[0].preprocessed:
+            return None
+        else:
+            result = files_to_send.pop(0)
     else:
         result = files_to_send.pop(-1)
 
@@ -228,6 +247,9 @@ async def worker_send_files(name, queue):
             file_system_event = await pop_event(queue, False)
             logging.debug(f'event {file_system_event} popped from queue')
             response = await send_file(file_system_event, stream_id_tag, stream_id, username, password, host)
+
+            if DELETE:
+                os.unlink(file_system_event.src_path)
 
             stats_total_bytes_sent += file_system_event.file_size
             if file_system_event.preprocessed:
@@ -250,6 +272,7 @@ async def worker_send_files(name, queue):
 
     except Exception as ex:
         logging.error(f'Exception on {name}: {ex}')
+        print(ex)
 
 
 async def main():
@@ -259,10 +282,16 @@ async def main():
     events_to_process_mt_queue = queue.Queue()  # thread safe queue, no async support.
     events_to_process_async_queue = asyncio.Queue()  # async Queue, not thread safe
 
-    observer = Observer()
-    event_handler = HasteFSEventHandler(put_event_on_queue)
-    observer.schedule(event_handler, path, recursive=True)
-    observer.start()
+    if False:
+        # Unreliable -- some files missing.
+        observer = Observer()
+        event_handler = HasteFSEventHandler(put_event_on_queue)
+        observer.schedule(event_handler, path, recursive=True)
+        observer.start()
+    else:
+        # poll instead. this approach doesnt support subfolders
+        poll_thread = threading.Thread(target=thread_worker_poll_fs, daemon=True    )
+        poll_thread.start()
 
     # Create workers to process events from the queue.
     # Here, there is a single worker thread.

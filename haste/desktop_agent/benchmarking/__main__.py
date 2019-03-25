@@ -5,6 +5,15 @@ import shutil
 import logging
 import haste.desktop_agent.config
 
+CONFIGS = [
+    (0, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/'),
+    (1, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/'),
+    (2, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/'),
+    (3, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/'),
+
+    (0, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/ffill/'),
+]
+
 
 async def main():
     LOGGING_FORMAT_DATE = '%Y-%m-%d %H:%M:%S.%d3'
@@ -14,19 +23,9 @@ async def main():
                         format=LOGGING_FORMAT,
                         datefmt=LOGGING_FORMAT_DATE)
 
-    configs = [
-        (0, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/'),
-        (1, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/'),
-        (2, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/'),
-        (3, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/'),
-
-        (0, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/ffill/'),
-    ]
-
     for i in range(5):
 
-        for j, c in enumerate(configs):
-
+        for j, c in enumerate(CONFIGS):
             logging.info(f'Starting Benchamrking Run {i}.{j}')
 
             proc_simulator = await asyncio.create_subprocess_shell(
