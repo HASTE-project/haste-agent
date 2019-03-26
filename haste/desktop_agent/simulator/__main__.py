@@ -30,10 +30,11 @@ if __name__ == '__main__':
     filenames = filter(lambda filename: filename.endswith(EXTENSION), filenames)
 
     filenames = list(sorted(filenames))
-    filenames = filenames[:1+config.QUIT_AFTER]
+    filenames = filenames[:config.QUIT_AFTER]
 
     assert len(filenames) == config.QUIT_AFTER
 
+    logging.info(f'about to stream {len(filenames)} files.')
 
     for filename in filenames:
         time_last_copy_initiated = time.time()

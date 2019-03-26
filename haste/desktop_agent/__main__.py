@@ -4,8 +4,10 @@ import threading
 import time
 from types import SimpleNamespace
 import os
+import traceback
 
 from haste.desktop_agent.golden import get_golden_prio_for_filename
+from haste.desktop_agent.master_queue import MasterQueue
 from watchdog.observers import Observer
 import asyncio
 import logging
@@ -13,12 +15,13 @@ import ben_images.file_utils
 from haste.desktop_agent.FSEvents import HasteFSEventHandler
 from haste.desktop_agent.args import initialize
 from haste.desktop_agent.config import MAX_CONCURRENT_XFERS, QUIT_AFTER, DELETE
-from haste.desktop_agent.benhttp import send_file
+from haste.desktop_agent.post_file import send_file
 
 # TODO: store timestamps also and clear the old ones
 already_written_filenames = set()
-files_to_send = []
-needs_sorting = False
+# files_to_send = []
+# needs_sorting = False
+master_queue = MasterQueue(QUIT_AFTER)
 timestamp_first_event = -1
 
 stats_total_bytes_sent = 0
@@ -53,14 +56,14 @@ def thread_worker_poll_fs():
                 if filename in already_written_filenames:
                     continue
 
-                filenames.sort() # timestamp at front of filename
+                filenames.sort()  # timestamp at front of filename
 
                 new_event = SimpleNamespace()
                 new_event.src_path = path + filename
                 new_event.is_directory = False
                 put_event_on_queue(new_event)
     except Exception as ex:
-        logging.error(f'exception on polling thread: {ex}')
+        logging.error(f'exception on polling thread: {traceback.format_exc()}')
 
 
 def put_event_on_queue(event):
@@ -88,7 +91,8 @@ def put_event_on_queue(event):
     if timestamp_first_event < 0:
         timestamp_first_event = event.timestamp
 
-    event.golden_bytes_reduction = get_golden_prio_for_filename(src_path.split('/')[-1])
+    if False:
+        event.golden_bytes_reduction = get_golden_prio_for_filename(src_path.split('/')[-1])
     event.preprocessed = False
 
     # Queue never full, has infinite capacity.
@@ -139,13 +143,17 @@ async def preprocess_async_loop(name, queue):
 
                 stdoutline_duration = await proc.stdout.readline()
                 stdoutline_duration = stdoutline_duration.decode().strip()
-                logging.info(f'stdout from preprocessor: {float(stdoutline_duration)}')
+                dur = float(stdoutline_duration)
+                logging.info(f'stdout from preprocessor: {dur}')
 
                 file_system_event2 = SimpleNamespace()
                 file_system_event2.timestamp = time.time()
                 file_system_event2.src_path = output_filepath
-                file_system_event2.golden_bytes_reduction = -1
+
+                file_system_event2.golden_bytes_reduction = (ben_images.file_utils.get_file_size(
+                    file_system_event.src_path) - ben_images.file_utils.get_file_size(output_filepath)) / dur
                 file_system_event2.preprocessed = True
+                file_system_event2.index = file_system_event.index
 
                 event_to_re_add = file_system_event2
 
@@ -163,19 +171,19 @@ async def preprocess_async_loop(name, queue):
             queue.task_done()
 
             # We've preprocessed everything for now. just re-add the original event and 'sleep' a little.
-            if file_system_event.preprocessed:
+            if file_system_event is None:
                 await asyncio.sleep(0.01)
 
     except Exception as ex:
-        logging.error(ex)
+        logging.error(traceback.format_exc())
         raise ex
 
 
-def log_queue_info():
-    # Log info about the present state of the queue
-    count_preprocessed = len(list(filter(lambda f: f.preprocessed, files_to_send)))
-    count_not_preprocessed = len(files_to_send) - count_preprocessed
-    logging.info(f'PLOT - {time.time()} - {count_preprocessed} - {count_not_preprocessed}')
+# def log_queue_info():
+#     # Log info about the present state of the queue
+#     count_preprocessed = len(list(filter(lambda f: f.preprocessed, files_to_send)))
+#     count_not_preprocessed = len(files_to_send) - count_preprocessed
+#     logging.info(f'PLOT - {time.time()} - {count_preprocessed} - {count_not_preprocessed}')
 
 
 async def push_event(event_to_re_add):
@@ -191,47 +199,26 @@ async def push_event(event_to_re_add):
             f'push_event() - raw:{stats_events_pushed_second_queue_raw}')
 
         event_to_re_add.file_size = ben_images.file_utils.get_file_size(event_to_re_add.src_path)
-        files_to_send.append(event_to_re_add)
-        needs_sorting = True
 
-        log_queue_info()
+        if event_to_re_add.preprocessed:
+            master_queue.notify_file_preprocessed(event_to_re_add.index, event_to_re_add.golden_bytes_reduction,
+                                                  event_to_re_add)
+        else:
+            master_queue.new_file(event_to_re_add)
 
     return await events_to_process_async_queue.put(object())
 
 
 async def pop_event(queue, for_preprocessing):
-    global needs_sorting
-
     await queue.get()
 
-    if needs_sorting:
-        start = time.time()
-
-        # "False sorts first"
-        # key = lambda e: (not e.preprocessed, -e.file_size)  # preprocessed=True, then largest first
-
-        # with Ground Truth. Prioritize where we know we can reduce the bytes the least.
-        key = lambda e: (e.preprocessed,
-                         -e.golden_bytes_reduction)
-
-        # key = lambda e: (not e.preprocessed, e.timestamp)
-
-        files_to_send.sort(key=key)
-
-        # sorting took 0.0001437664031982422 secs
-        # logging.info(f'sorting took {time.time() - start} secs')
-
-        needs_sorting = False
-
     if for_preprocessing:
-        if files_to_send[0].preprocessed:
-            return None
-        else:
-            result = files_to_send.pop(0)
+        index, result = master_queue.pop_file_to_preprocess()
     else:
-        result = files_to_send.pop(-1)
+        index, result = master_queue.pop_file_to_send()
 
-    log_queue_info()
+    if result is not None:
+        result.index = index
 
     return result
 
@@ -264,14 +251,14 @@ async def worker_send_files(name, queue):
                 f'total_bytes_sent: {stats_total_bytes_sent} preprocessed_files_sent: {stats_preprocessed_files_sent} raw_files_sent: {stats_not_preprocessed_files_sent}')
 
             # Benchmarking hack
-            if len(
-                    files_to_send) == 0 and stats_not_preprocessed_files_sent + stats_preprocessed_files_sent == QUIT_AFTER:
+            if stats_not_preprocessed_files_sent + stats_preprocessed_files_sent == QUIT_AFTER:
                 logging.info(
                     f'Queue_is_empty. Duration since first event: {time.time() - timestamp_first_event} - total_bytes_sent: {stats_total_bytes_sent}')
+                # master_queue.plot()
                 quit()
 
     except Exception as ex:
-        logging.error(f'Exception on {name}: {ex}')
+        logging.error(f'Exception on {name}: {traceback.format_exc()}')
         print(ex)
 
 
@@ -290,7 +277,7 @@ async def main():
         observer.start()
     else:
         # poll instead. this approach doesnt support subfolders
-        poll_thread = threading.Thread(target=thread_worker_poll_fs, daemon=True    )
+        poll_thread = threading.Thread(target=thread_worker_poll_fs, daemon=True)
         poll_thread.start()
 
     # Create workers to process events from the queue.
@@ -317,7 +304,8 @@ async def main():
         observer.stop()
         await asyncio.gather(*tasks, return_exceptions=True)
 
-    observer.join()
+    if observer is not None:
+        observer.join()
 
 
 if __name__ == '__main__':

@@ -8,7 +8,8 @@ from haste.desktop_agent.config import LOGGING_FORMAT_AGENT, LOGGING_FORMAT_DATE
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='Watch directory and stream new files to HASTE', prog=ARG_PARSE_PROG_NAME)
+    parser = argparse.ArgumentParser(description='Watch directory and stream new files to HASTE',
+                                     prog=ARG_PARSE_PROG_NAME)
 
     parser.add_argument('path', metavar='path', type=str, nargs=1, help='path to watch (e.g. C:/docs/foo')
     parser.add_argument('--include', type=str, nargs='?', help='include only files with this extension')
@@ -19,10 +20,7 @@ def parse_args():
 
     parser.add_argument('--x-preprocessing-cores', default=1, type=int)
 
-
-
     args = parser.parse_args()
-
     return args
 
 
@@ -35,7 +33,6 @@ def create_stream_id(stream_id_tag):
 
 
 def initialize():
-
     logging.basicConfig(level=logging.INFO,
                         format=LOGGING_FORMAT_AGENT,
                         datefmt=LOGGING_FORMAT_DATE)
@@ -55,7 +52,7 @@ def initialize():
     password = args.password
     host = args.host
 
-    x_preprocessing_cores= args.x_preprocessing_cores
+    x_preprocessing_cores = args.x_preprocessing_cores
 
     # TODO: generate new stream_id after long pause in new images?
 
