@@ -3,7 +3,7 @@ import pandas as pd
 from haste.desktop_agent.benchmarking.__main__ import CONFIGS
 import matplotlib.pyplot as plt
 
-RUN = '3_tues_pm_office_with_no_fitting'
+RUN = '4_tues_pm_home_200_images'
 
 # grep Queue_is_empty *.log > grepped.txt
 

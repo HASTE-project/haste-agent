@@ -4,6 +4,7 @@ import os
 import shutil
 import logging
 import haste.desktop_agent.config
+import sys
 
 # num_preproc_core, source_dir, enable_prio_by_splines
 CONFIGS = [
@@ -34,14 +35,26 @@ async def main():
         for j, c in enumerate(CONFIGS):
             logging.info(f'Starting Benchamrking Run {i}.{j}')
 
-            proc_simulator = await asyncio.create_subprocess_shell(
-                f'python3 -m haste.desktop_agent.simulator {c[1]}')
+            proc_simulator = await asyncio.create_subprocess_exec(
+                sys.executable, '-m', 'haste.desktop_agent.simulator', c[1])
 
             await asyncio.sleep(5)
 
-            cmd =f'python3 -m haste.desktop_agent --include {haste.desktop_agent.config.EXTENSION} --tag trash --host haste-gateway.benblamey.com:80 --username haste --password mr_frumbles_bad_day {haste.desktop_agent.config.TARGET_DIR} --x-preprocessing-cores {c[0]} {"" if c[2] else "--x-disable-prioritization" }'
+            cmd = [sys.executable,
+                   '-m', 'haste.desktop_agent',
+                   '--include', haste.desktop_agent.config.EXTENSION,
+                   '--tag', 'trash',
+                   '--host', 'haste-gateway.benblamey.com:80',
+                   '--username', 'haste',
+                   '--password', 'mr_frumbles_bad_day',
+                   haste.desktop_agent.config.TARGET_DIR,
+                   '--x-preprocessing-cores', str(c[0])]
+            if not c[2]:
+                cmd.append("--x-disable-prioritization")
+
+
             logging.info(cmd)
-            proc_agent = await asyncio.create_subprocess_shell(cmd)
+            proc_agent = await asyncio.create_subprocess_exec(*cmd)
 
             await proc_simulator.wait()
             await proc_agent.wait()

@@ -176,7 +176,7 @@ async def preprocess_async_loop(name, queue):
 
             # We've preprocessed everything for now. just re-add the original event and 'sleep' a little.
             if file_system_event is None:
-                await asyncio.sleep(0.01)
+                await asyncio.sleep(0.2)
 
     except Exception as ex:
         logging.error(traceback.format_exc())
@@ -216,10 +216,13 @@ async def push_event(event_to_re_add):
 async def pop_event(queue, for_preprocessing):
     await queue.get()
 
+    start = time.time()
     if for_preprocessing:
         index, result = master_queue.pop_file_to_preprocess()
     else:
         index, result = master_queue.pop_file_to_send()
+
+    # logging.info(f'popping_took: {time.time() - start}')
 
     if result is not None:
         result.index = index
@@ -313,13 +316,12 @@ async def main():
 
 
 if __name__ == '__main__':
-    if True:
+    if False:
         asyncio.run(main())
     else:
         # (couldn't find anything)
         # https://stackoverflow.com/questions/38856410/monitoring-the-asyncio-event-loop
         loop = asyncio.get_event_loop()
-        assert hasattr(loop, 'slow_callback_duration')
-        loop.slow_callback_duration = 0.01
+        loop.slow_callback_duration = 0.05
         loop.set_debug(True)  # Enable debug
         loop.run_until_complete(main())

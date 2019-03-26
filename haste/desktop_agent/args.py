@@ -39,8 +39,6 @@ def initialize():
                         format=LOGGING_FORMAT_AGENT,
                         datefmt=LOGGING_FORMAT_DATE)
 
-    logging.info(f'current directory is: {os.getcwd()}')
-    logging.debug(f'command line args arg: {sys.argv}')
 
     args = parse_args()
     path = args.path[0]
@@ -57,12 +55,13 @@ def initialize():
     x_preprocessing_cores = args.x_preprocessing_cores
     x_enable_prioritization = args.prio
 
-    logging.info(f'x_enable_prioritization: {x_enable_prioritization}')
 
     # TODO: generate new stream_id after long pause in new images?
 
     stream_id = create_stream_id(stream_id_tag)
 
+    logging.info(f'current directory is: {os.getcwd()}')
+    logging.debug(f'command line args arg: {sys.argv}')
     # Now we have the stream ID, create a log file for this stream:
 
     file_logger = logging.FileHandler(os.path.join('logs', f'agent_log_{stream_id}.log'))
@@ -72,6 +71,7 @@ def initialize():
     logging.getLogger('').addHandler(file_logger)
     logging.info(f'stream_id: {stream_id}')
 
+    logging.info(f'x_enable_prioritization: {x_enable_prioritization}')
     logging.info(f'preprocessing_cores: {x_preprocessing_cores}')
 
     logging.info(f'simulator_frequency (incase simulator used): {FREQUENCY}')
