@@ -21,7 +21,6 @@ from haste.desktop_agent.post_file import send_file
 already_written_filenames = set()
 # files_to_send = []
 # needs_sorting = False
-master_queue = MasterQueue(QUIT_AFTER)
 timestamp_first_event = -1
 
 stats_total_bytes_sent = 0
@@ -31,8 +30,10 @@ stats_events_pushed_first_queue = 0
 stats_events_pushed_second_queue_preprocessed = 0
 stats_events_pushed_second_queue_raw = 0
 
-path, dot_and_extension, stream_id_tag, username, password, host, stream_id, x_preprocessing_cores = initialize()
+path, dot_and_extension, stream_id_tag, username, password, host, stream_id, x_preprocessing_cores, x_enable_prioritization = initialize()
 assert path.endswith('/')
+
+master_queue = MasterQueue(QUIT_AFTER, x_enable_prioritization)
 
 time_last_full_dir_listing = -1
 
@@ -46,8 +47,11 @@ def thread_worker_poll_fs():
             # There are some issues with the watchdog -- sometimes files seem to be missed.
             # As a workaround, do a full directory listing each second.
             pause = time_last_full_dir_listing + 1 - time.time()
-            if time_last_full_dir_listing > 0 and pause > 0:
-                time.sleep(pause)
+            if time_last_full_dir_listing > 0:
+                if pause > 0:
+                    time.sleep(pause)
+                else:
+                    logging.warn(f'fs poll overran by {pause}')
 
             filenames = os.listdir(path)
             time_last_full_dir_listing = time.time()
@@ -309,4 +313,13 @@ async def main():
 
 
 if __name__ == '__main__':
-    asyncio.run(main())
+    if True:
+        asyncio.run(main())
+    else:
+        # (couldn't find anything)
+        # https://stackoverflow.com/questions/38856410/monitoring-the-asyncio-event-loop
+        loop = asyncio.get_event_loop()
+        assert hasattr(loop, 'slow_callback_duration')
+        loop.slow_callback_duration = 0.01
+        loop.set_debug(True)  # Enable debug
+        loop.run_until_complete(main())

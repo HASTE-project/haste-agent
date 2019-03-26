@@ -5,13 +5,19 @@ import shutil
 import logging
 import haste.desktop_agent.config
 
+# num_preproc_core, source_dir, enable_prio_by_splines
 CONFIGS = [
-    (0, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/'),
-    (1, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/'),
-    (2, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/'),
-    (3, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/'),
+    (0, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/', False),
 
-    (0, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/ffill/'),
+    (1, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/', True),
+    (2, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/', True),
+    (3, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/', True),
+
+    (1, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/', False),
+    (2, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/', False),
+    (3, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/', False),
+
+    (0, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/ffill/', False),
 ]
 
 
@@ -33,8 +39,9 @@ async def main():
 
             await asyncio.sleep(5)
 
-            proc_agent = await asyncio.create_subprocess_shell(
-                f'python3 -m haste.desktop_agent --include {haste.desktop_agent.config.EXTENSION} --tag trash --host haste-gateway.benblamey.com:80 --username haste --password mr_frumbles_bad_day {haste.desktop_agent.config.TARGET_DIR} --x-preprocessing-cores {c[0]}')
+            cmd =f'python3 -m haste.desktop_agent --include {haste.desktop_agent.config.EXTENSION} --tag trash --host haste-gateway.benblamey.com:80 --username haste --password mr_frumbles_bad_day {haste.desktop_agent.config.TARGET_DIR} --x-preprocessing-cores {c[0]} {"" if c[2] else "--x-disable-prioritization" }'
+            logging.info(cmd)
+            proc_agent = await asyncio.create_subprocess_shell(cmd)
 
             await proc_simulator.wait()
             await proc_agent.wait()

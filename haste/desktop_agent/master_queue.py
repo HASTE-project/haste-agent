@@ -22,7 +22,7 @@ class MasterQueue:
     debug_fig_index = 0
     count_files_preprocessed = 0
 
-    def __init__(self, capacity):
+    def __init__(self, capacity, enable_prioriztion):
         logging.basicConfig(level=logging.INFO,
                             format=LOGGING_FORMAT_AGENT,
                             datefmt=LOGGING_FORMAT_DATE)
@@ -36,6 +36,7 @@ class MasterQueue:
         self.known_scores = np.full(capacity, -1)
         self.estimated_scores = np.ones(capacity)
         self.index = np.arange(0, capacity)
+        self.enable_priorization = enable_prioriztion
 
     def new_file(self, info):
         self.infos.append(info)
@@ -130,40 +131,48 @@ class MasterQueue:
         logging.info(f'PLOT - {time.time()} - {count_preprocessed} - {count_not_preprocessed}')
 
     def _update_estimated_scores(self):
-        # Fit the spline:
-        to_fit_indices = (self.known_scores > 0)
+        if self.enable_priorization:
+            start = time.time()
 
-        if np.sum(to_fit_indices) > 3:
-            to_fit_X = self.index[to_fit_indices]
-            to_fit_Y = self.known_scores[to_fit_indices]
+            # Fit the spline:
+            to_fit_indices = (self.known_scores > 0)
 
-            # index of first 'True'
-            min_interpolate_range = np.argmax(to_fit_indices)
-            # index of last 'True'
-            max_interpolate_range = len(to_fit_indices) - np.argmax(to_fit_indices[::-1]) - 1
+            if np.sum(to_fit_indices) > 3:
+                to_fit_X = self.index[to_fit_indices]
+                to_fit_Y = self.known_scores[to_fit_indices]
 
-            if True:
-                # Linear spline
-                f = interp1d(to_fit_X, to_fit_Y, assume_sorted=True)
-            else:
-                # Cubic spline
-                f = interp1d(to_fit_X, to_fit_Y, assume_sorted=True, kind='cubic')
+                # index of first 'True'
+                min_interpolate_range = np.argmax(to_fit_indices)
+                # index of last 'True'
+                max_interpolate_range = len(to_fit_indices) - np.argmax(to_fit_indices[::-1]) - 1
 
-            self.estimated_scores[min_interpolate_range:max_interpolate_range + 1] = f(
-                self.index[min_interpolate_range:max_interpolate_range + 1])
+                if True:
+                    # Linear spline
+                    f = interp1d(to_fit_X, to_fit_Y, assume_sorted=True)
+                else:
+                    # Cubic spline
+                    f = interp1d(to_fit_X, to_fit_Y, assume_sorted=True, kind='cubic')
 
-            self.estimated_scores[0:min_interpolate_range] = self.estimated_scores[min_interpolate_range]
-            self.estimated_scores[max_interpolate_range + 1:-1] = self.estimated_scores[max_interpolate_range]
+                self.estimated_scores[min_interpolate_range:max_interpolate_range + 1] = f(
+                    self.index[min_interpolate_range:max_interpolate_range + 1])
 
-            min_estimated_score = np.min(self.estimated_scores)
+                self.estimated_scores[0:min_interpolate_range] = self.estimated_scores[min_interpolate_range]
+                self.estimated_scores[max_interpolate_range + 1:-1] = self.estimated_scores[max_interpolate_range]
 
-            if min_estimated_score < 0:
-                self.estimated_scores = self.estimated_scores + 1 + (-min_estimated_score)
+                min_estimated_score = np.min(self.estimated_scores)
 
-            assert (np.min(self.estimated_scores) >= 0)
+                if min_estimated_score < 0:
+                    self.estimated_scores = self.estimated_scores + 1 + (-min_estimated_score)
 
-        logging.info(
-            f'{time.time()}* known_scores_are: *{self.known_scores.tolist()}* states_are: *{self.states.tolist()}*')
+                assert (np.min(self.estimated_scores) >= 0)
+
+            logging.info(
+                f'{time.time()}* known_scores_are: *{self.known_scores.tolist()}* states_are: *{self.states.tolist()}*')
+
+            logging.info(f'_update_estimated_scores took {time.time()-start}')
+        else:
+            # Leave self.estimated_scores as an array of ones. They will be selected at random.
+            pass
 
     def plot(self):
         # plt.plot(self.index, map(lambda filename: get_golden_prio_for_filename(filename), )
