@@ -61,7 +61,6 @@ def initialize():
     stream_id = create_stream_id(stream_id_tag)
 
     logging.info(f'current directory is: {os.getcwd()}')
-    logging.debug(f'command line args arg: {sys.argv}')
     # Now we have the stream ID, create a log file for this stream:
 
     file_logger = logging.FileHandler(os.path.join('logs', f'agent_log_{stream_id}.log'))
@@ -69,7 +68,10 @@ def initialize():
     file_logger.setFormatter(logging.Formatter(LOGGING_FORMAT_AGENT, LOGGING_FORMAT_DATE))
 
     logging.getLogger('').addHandler(file_logger)
+
+    logging.debug(f'command line args arg: {sys.argv}')
     logging.info(f'stream_id: {stream_id}')
+
 
     logging.info(f'x_enable_prioritization: {x_enable_prioritization}')
     logging.info(f'preprocessing_cores: {x_preprocessing_cores}')

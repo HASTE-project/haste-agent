@@ -30,10 +30,9 @@ async def main():
                         format=LOGGING_FORMAT,
                         datefmt=LOGGING_FORMAT_DATE)
 
-    for i in range(5):
-
+    while time.time() < 1553760000:  # 03/28/2019 @ 8:00am (UTC)
         for j, c in enumerate(CONFIGS):
-            logging.info(f'Starting Benchamrking Run {i}.{j}')
+            logging.info(f'Starting Benchmarking Run {i}.{j}')
 
             proc_simulator = await asyncio.create_subprocess_exec(
                 sys.executable, '-m', 'haste.desktop_agent.simulator', c[1])
@@ -51,7 +50,6 @@ async def main():
                    '--x-preprocessing-cores', str(c[0])]
             if not c[2]:
                 cmd.append("--x-disable-prioritization")
-
 
             logging.info(cmd)
             proc_agent = await asyncio.create_subprocess_exec(*cmd)

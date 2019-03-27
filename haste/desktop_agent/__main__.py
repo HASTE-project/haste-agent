@@ -1,7 +1,7 @@
 import queue
-import sys
 import threading
 import time
+from subprocess import Popen
 from types import SimpleNamespace
 import os
 import traceback
@@ -36,6 +36,7 @@ assert path.endswith('/')
 master_queue = MasterQueue(QUIT_AFTER, x_enable_prioritization)
 
 time_last_full_dir_listing = -1
+TOO_LONG = 0.005
 
 
 def thread_worker_poll_fs():
@@ -97,7 +98,9 @@ def put_event_on_queue(event):
 
     if False:
         event.golden_bytes_reduction = get_golden_prio_for_filename(src_path.split('/')[-1])
+
     event.preprocessed = False
+    event.file_size = ben_images.file_utils.get_file_size(event.src_path)
 
     # Queue never full, has infinite capacity.
     events_to_process_mt_queue.put(event, block=True)
@@ -112,13 +115,20 @@ async def xfer_events_from_fs(name):
     # Async on the main thread. Xfer events from the thread-safe queue onto the async queue on the main thread.
     logging.debug(f'{name} started')
 
+    time_after_async = 0
     try:
         while True:
             try:
                 event = events_to_process_mt_queue.get_nowait()
+
+                time_blocked = time.time() - time_after_async
+                if time_blocked > TOO_LONG:
+                    logging.info(f'xfer_events_from_fs spent {time_blocked} blocking main thread')
+
                 await push_event(event)
             except queue.Empty:
-                await asyncio.sleep(0.01)
+                await asyncio.sleep(0.1)
+            time_after_async = time.time()
     except Exception as ex:
         print(ex)
 
@@ -132,7 +142,7 @@ async def preprocess_async_loop(name, queue):
             stdin=asyncio.subprocess.PIPE)
 
         while True:
-            file_system_event = await pop_event(queue, True)
+            file_system_event = await pop_event(True)
 
             if file_system_event is not None:
                 logging.info(f'preprocessing: {file_system_event.src_path}')
@@ -145,17 +155,23 @@ async def preprocess_async_loop(name, queue):
                 proc.stdin.write(line_to_send.encode())
                 await proc.stdin.drain()
 
-                stdoutline_duration = await proc.stdout.readline()
-                stdoutline_duration = stdoutline_duration.decode().strip()
-                dur = float(stdoutline_duration)
-                logging.info(f'stdout from preprocessor: {dur}')
+                stdoutline = await proc.stdout.readline()
+                stdoutline = stdoutline.decode().strip()
+                logging.info(f'stdout from preprocessor: {stdoutline}')
+
+                dur_preproc = float(stdoutline.split(',')[0])
+                dur_waiting = float(stdoutline.split(',')[1])
+
+                logging.debug(f'preprocessor waiting: {dur_waiting}')
 
                 file_system_event2 = SimpleNamespace()
                 file_system_event2.timestamp = time.time()
                 file_system_event2.src_path = output_filepath
 
-                file_system_event2.golden_bytes_reduction = (ben_images.file_utils.get_file_size(
-                    file_system_event.src_path) - ben_images.file_utils.get_file_size(output_filepath)) / dur
+                file_system_event2.file_size = ben_images.file_utils.get_file_size(output_filepath)
+
+                file_system_event2.golden_bytes_reduction = (
+                                                                        file_system_event.file_size - file_system_event2.file_size) / dur_preproc
                 file_system_event2.preprocessed = True
                 file_system_event2.index = file_system_event.index
 
@@ -202,19 +218,18 @@ async def push_event(event_to_re_add):
         logging.info(
             f'push_event() - raw:{stats_events_pushed_second_queue_raw}')
 
-        event_to_re_add.file_size = ben_images.file_utils.get_file_size(event_to_re_add.src_path)
-
         if event_to_re_add.preprocessed:
             master_queue.notify_file_preprocessed(event_to_re_add.index, event_to_re_add.golden_bytes_reduction,
                                                   event_to_re_add)
         else:
+
             master_queue.new_file(event_to_re_add)
 
     return await events_to_process_async_queue.put(object())
 
 
-async def pop_event(queue, for_preprocessing):
-    await queue.get()
+async def pop_event(for_preprocessing):
+    await events_to_process_async_queue.get()
 
     start = time.time()
     if for_preprocessing:
@@ -222,7 +237,7 @@ async def pop_event(queue, for_preprocessing):
     else:
         index, result = master_queue.pop_file_to_send()
 
-    # logging.info(f'popping_took: {time.time() - start}')
+    logging.debug(f'popping_took: {time.time() - start}')
 
     if result is not None:
         result.index = index
@@ -236,14 +251,40 @@ async def worker_send_files(name, queue):
     # Process events from the queue on the main thread.
     logging.debug(f'Worker {name} started')
 
+    last = 0
+
     try:
         while True:
-            file_system_event = await pop_event(queue, False)
+
+            if time.time() - last > TOO_LONG:
+                logging.info(f'worker_took: {time.time() - last}')
+
+            file_system_event = await pop_event(False)
             logging.debug(f'event {file_system_event} popped from queue')
-            response = await send_file(file_system_event, stream_id_tag, stream_id, username, password, host)
+
+            # takes ~0.0003s
+            # start_file_read = time.time()
+            # f = open(file_system_event.src_path, 'rb')
+            # filelike = f.read()
+            # f.close()
+            # logging.info(f'file_read_took: {time.time()-start_file_read}')
+
+            filelike = file_system_event.src_path
+
+            response = await send_file(file_system_event, filelike, stream_id_tag, stream_id, username, password, host)
+
+            last = time.time()
 
             if DELETE:
-                os.unlink(file_system_event.src_path)
+                start_delete = time.time()
+                if False:
+                    # this takes ~0.005...at ~10Hz this is too slow?
+                    # close_fds makes the parent process' file handles inaccessible for the child.
+                    proc = Popen(f'rm {file_system_event.src_path}', shell=True, stdin=None, stdout=None, stderr=None,
+                                 close_fds=True)
+                else:
+                    os.unlink(file_system_event.src_path)
+                logging.debug(f'starting delete took: {start_delete - time.time()}')
 
             stats_total_bytes_sent += file_system_event.file_size
             if file_system_event.preprocessed:
@@ -253,6 +294,8 @@ async def worker_send_files(name, queue):
 
             logging.debug(f'Server response body: {response}')
             queue.task_done()
+
+            master_queue.notify_file_sent(file_system_event.index)
 
             logging.info(
                 f'total_bytes_sent: {stats_total_bytes_sent} preprocessed_files_sent: {stats_preprocessed_files_sent} raw_files_sent: {stats_not_preprocessed_files_sent}')
@@ -316,12 +359,15 @@ async def main():
 
 
 if __name__ == '__main__':
-    if False:
+    if True:
         asyncio.run(main())
     else:
+        # Debug mode.
+        EventLoopDelayMonitor(interval=1)
+
         # (couldn't find anything)
         # https://stackoverflow.com/questions/38856410/monitoring-the-asyncio-event-loop
         loop = asyncio.get_event_loop()
-        loop.slow_callback_duration = 0.05
+        loop.slow_callback_duration = TOO_LONG
         loop.set_debug(True)  # Enable debug
         loop.run_until_complete(main())

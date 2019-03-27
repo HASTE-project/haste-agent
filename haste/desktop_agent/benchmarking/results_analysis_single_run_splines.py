@@ -27,11 +27,12 @@ spline_states = []
 # 2019-03-25 15:59:02.253 - AGENT - MainThread - INFO - PLOT_QUEUE - 1553525942.2393758 - POP_PREPROCESS - 18
 # 2019-03-25 15:59:02.253 - AGENT - MainThread - INFO - PLOT_QUEUE - 1553525942.253982 - POP_SEND - 49
 
-stream_id = '2019_03_25__17_34_20_trash'
+stream_id = '2019_03_27__14_52_06_trash'
 
 print(os.getcwd())
 
-with open(f'logs/2_tues_am_office/agent_log_2019_03_26__10_10_21_trash.log') as f:
+# with open(f'logs/2_tues_am_office/agent_log_2019_03_26__10_10_21_trash.log') as f:
+with open(f'../../../logs/agent_log_{stream_id}.log') as f:
     for line in f.readlines():
 
         if 'known_scores_are' in line:
@@ -155,5 +156,16 @@ for spline_state in spline_states:
                 Y_files_that_were_preprocessed.append(golden_compressibility[i])
 
 plt.scatter(X_files_that_were_preprocessed, Y_files_that_were_preprocessed)
+
+X_files_that_were_not_preprocessed = []
+Y_files_that_were_not_preprocessed = []
+
+for i in range(len(spline_states[0])):
+    if i not in X_files_that_were_preprocessed:
+        X_files_that_were_not_preprocessed.append(i)
+        Y_files_that_were_not_preprocessed.append(golden_compressibility[i])
+
+plt.scatter(X_files_that_were_not_preprocessed, Y_files_that_were_not_preprocessed)
+
 
 plt.savefig(f'figures/{stream_id}.1.splines-blended.png')

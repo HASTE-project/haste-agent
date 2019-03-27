@@ -161,7 +161,7 @@ class MasterQueue:
 
                 min_estimated_score = np.min(self.estimated_scores)
 
-                if min_estimated_score < 0:
+                if min_estimated_score <= 0:
                     self.estimated_scores = self.estimated_scores + 1 + (-min_estimated_score)
 
                 assert (np.min(self.estimated_scores) >= 0)

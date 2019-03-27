@@ -23,7 +23,6 @@ if __name__ == '__main__':
         os.remove(TARGET_DIR + file_to_delete)
 
     logging.info('done... about to start stream...')
-    time.sleep(10)
 
     filenames = os.listdir(SOURCE_DIR)
 
@@ -35,6 +34,8 @@ if __name__ == '__main__':
     assert len(filenames) == config.QUIT_AFTER
 
     logging.info(f'about to stream {len(filenames)} files.')
+
+    time.sleep(10)
 
     for filename in filenames:
         time_last_copy_initiated = time.time()
