@@ -27,12 +27,15 @@ spline_states = []
 # 2019-03-25 15:59:02.253 - AGENT - MainThread - INFO - PLOT_QUEUE - 1553525942.2393758 - POP_PREPROCESS - 18
 # 2019-03-25 15:59:02.253 - AGENT - MainThread - INFO - PLOT_QUEUE - 1553525942.253982 - POP_SEND - 49
 
-stream_id = '2019_03_27__14_52_06_trash'
+run = '15_mon_pm'
+stream_id = 'agent_log_2019_04_15__18_59_55_trash'#'2019_03_29__11_18_21_trash'
+
+stream_id = stream_id.replace('agent_log_', '')
 
 print(os.getcwd())
 
 # with open(f'logs/2_tues_am_office/agent_log_2019_03_26__10_10_21_trash.log') as f:
-with open(f'../../../logs/agent_log_{stream_id}.log') as f:
+with open(f'logs/{run}/agent_log_{stream_id}.log') as f:
     for line in f.readlines():
 
         if 'known_scores_are' in line:
@@ -142,7 +145,15 @@ if True:
         if f is not None:
             num_steps = int((max - min) / capacity * 1000)
             X = np.linspace(min, max, num_steps, endpoint=True)
-            plt.plot(X, f(X), color=(0, 0.1, 1, (i / capacity) * 0.5))
+            plt.plot(X, f(X), color=(0, 0.1, 1, 0.2 + (i / capacity)**5 * 0.3))
+    if True:
+        scores = spline_scores[-1]
+        f, min, max = fit_spline(scores)
+        if f is not None:
+            num_steps = int((max - min) / capacity * 1000)
+            X = np.linspace(min, max, num_steps, endpoint=True)
+            plt.plot(X, f(X), color=(0, 1, 0))
+
 
 X_files_that_were_preprocessed = []
 Y_files_that_were_preprocessed = []

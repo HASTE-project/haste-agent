@@ -1,0 +1,13 @@
+agent_log_2019_04_15__15_16_40_trash.log:2019-04-15 15:19:55.153 - AGENT - MainThread - INFO - Queue_is_empty. Duration since first event: 190.87014389038086 - total_bytes_sent: 359593231
+agent_log_2019_04_15__15_20_04_trash.log:2019-04-15 15:23:04.153 - AGENT - MainThread - INFO - Queue_is_empty. Duration since first event: 174.71141076087952 - total_bytes_sent: 333465500
+agent_log_2019_04_15__15_23_13_trash.log:2019-04-15 15:26:02.153 - AGENT - MainThread - INFO - Queue_is_empty. Duration since first event: 163.72998595237732 - total_bytes_sent: 311223563
+agent_log_2019_04_15__15_26_11_trash.log:2019-04-15 15:28:58.153 - AGENT - MainThread - INFO - Queue_is_empty. Duration since first event: 162.653578042984 - total_bytes_sent: 313063090
+agent_log_2019_04_15__15_29_08_trash.log:2019-04-15 15:32:07.153 - AGENT - MainThread - INFO - Queue_is_empty. Duration since first event: 174.85377311706543 - total_bytes_sent: 335120787
+agent_log_2019_04_15__15_32_16_trash.log:2019-04-15 15:35:10.153 - AGENT - MainThread - INFO - Queue_is_empty. Duration since first event: 168.34673500061035 - total_bytes_sent: 322756173
+agent_log_2019_04_15__15_35_19_trash.log:2019-04-15 15:38:10.153 - AGENT - MainThread - INFO - Queue_is_empty. Duration since first event: 165.7234969139099 - total_bytes_sent: 317440463
+agent_log_2019_04_15__15_38_19_trash.log:2019-04-15 15:40:01.153 - AGENT - MainThread - INFO - Queue_is_empty. Duration since first event: 96.98374891281128 - total_bytes_sent: 238810858
+agent_log_2019_04_15__15_40_20_trash.log:2019-04-15 15:41:07.153 - AGENT - MainThread - INFO - Queue_is_empty. Duration since first event: 41.9886417388916 - total_bytes_sent: 359593231
+agent_log_2019_04_15__15_41_19_trash.log:2019-04-15 15:42:18.153 - AGENT - MainThread - INFO - Queue_is_empty. Duration since first event: 53.39383292198181 - total_bytes_sent: 357258890
+agent_log_2019_04_15__15_42_27_trash.log:2019-04-15 15:43:19.153 - AGENT - MainThread - INFO - Queue_is_empty. Duration since first event: 47.292447090148926 - total_bytes_sent: 355551308
+agent_log_2019_04_15__15_43_28_trash.log:2019-04-15 15:44:13.153 - AGENT - MainThread - INFO - Queue_is_empty. Duration since first event: 40.15526604652405 - total_bytes_sent: 353374329
+agent_log_2019_04_15__15_44_23_trash.log:2019-04-15 15:45:09.153 - AGENT - MainThread - INFO - Queue_is_empty. Duration since first event: 41.44921803474426 - total_bytes_sent: 357147662

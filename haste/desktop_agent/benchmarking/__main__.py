@@ -30,7 +30,10 @@ async def main():
                         format=LOGGING_FORMAT,
                         datefmt=LOGGING_FORMAT_DATE)
 
-    while time.time() < 1553760000:  # 03/28/2019 @ 8:00am (UTC)
+    i = -1
+    # while time.time() < 1553760000:  # 03/28/2019 @ 8:00am (UTC)
+    while True:
+        i += 1
         for j, c in enumerate(CONFIGS):
             logging.info(f'Starting Benchmarking Run {i}.{j}')
 
@@ -60,6 +63,9 @@ async def main():
             logging.info(f'Finished Benchmarking Run {i}.{j}')
 
             await asyncio.sleep(3)
+
+        await asyncio.sleep(10)
+
 
 
 if __name__ == '__main__':

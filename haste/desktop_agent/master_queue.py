@@ -80,9 +80,7 @@ class MasterQueue:
     def pop_file_to_preprocess(self):
 
         # search_else_climb =random.choice([True, False])
-        search_else_climb = self.count_files_preprocessed % 5 == 1
-
-        if search_else_climb:
+        if len(np.where(self.states != STATE_NO_FILE)[0]) / 5 > self.count_files_preprocessed:
             # search
             indexes_to_process = np.where(self.states == STATE_UNSENT_NOT_PRE_PROCESSED)[0]
 

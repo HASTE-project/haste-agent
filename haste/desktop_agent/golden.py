@@ -3,7 +3,16 @@ import time
 import pandas as pd
 
 csv_results = pd.read_csv(
-    '/Users/benblamey/projects/haste/vironova-image-compression/results/viron_2019_02_04__11_34_55.csv')
+    '/Users/benblamey/projects/haste/vironova-image-compression/results/viron_2019_02_04__11_34_55.csv',
+    header=None,
+    names=[
+        'filename',
+        'dur_load_image_to_np',
+        'dur_flood_fill',
+        'duration_total',
+        'input_file_size_bytes',
+        'output_file_size_bytes',
+    ])
 
 
 def get_golden_prio_for_filename(filename):
