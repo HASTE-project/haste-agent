@@ -6,6 +6,7 @@ from types import SimpleNamespace
 import os
 import traceback
 
+from haste.desktop_agent import golden
 from haste.desktop_agent.golden import get_golden_prio_for_filename
 from haste.desktop_agent.master_queue import MasterQueue
 from watchdog.observers import Observer
@@ -14,7 +15,8 @@ import logging
 import ben_images.file_utils
 from haste.desktop_agent.FSEvents import HasteFSEventHandler
 from haste.desktop_agent.args import initialize
-from haste.desktop_agent.config import MAX_CONCURRENT_XFERS, QUIT_AFTER, DELETE
+from haste.desktop_agent.config import MAX_CONCURRENT_XFERS, QUIT_AFTER, DELETE, FAKE_UPLOAD, \
+    FAKE_UPLOAD_SPEED_BITS_PER_SECOND
 from haste.desktop_agent.post_file import send_file
 
 # TODO: store timestamps also and clear the old ones
@@ -29,11 +31,16 @@ stats_not_preprocessed_files_sent = 0
 stats_events_pushed_first_queue = 0
 stats_events_pushed_second_queue_preprocessed = 0
 stats_events_pushed_second_queue_raw = 0
+stats_total_preproc_duration = 0
 
-path, dot_and_extension, stream_id_tag, username, password, host, stream_id, x_preprocessing_cores, x_enable_prioritization = initialize()
+path, dot_and_extension, stream_id_tag, username, password, host, stream_id, x_preprocessing_cores, x_mode = initialize()
 assert path.endswith('/')
 
-master_queue = MasterQueue(QUIT_AFTER, x_enable_prioritization)
+ground_truth = golden.csv_results[0:QUIT_AFTER]
+golden_estimated_scores = (ground_truth['input_file_size_bytes'] - ground_truth[
+    'output_file_size_bytes']) / ground_truth['duration_total']
+
+master_queue = MasterQueue(QUIT_AFTER, x_mode, golden_estimated_scores)
 
 time_last_full_dir_listing = -1
 TOO_LONG = 0.005
@@ -44,11 +51,11 @@ def thread_worker_poll_fs():
 
     try:
         while True:
-
+            PAUSE = 0.5
             # There are some issues with the watchdog -- sometimes files seem to be missed.
             # As a workaround, do a full directory listing each second.
-            pause = time_last_full_dir_listing + 1 - time.time()
             if time_last_full_dir_listing > 0:
+                pause = (time_last_full_dir_listing + PAUSE) - time.time()
                 if pause > 0:
                     time.sleep(pause)
                 else:
@@ -56,6 +63,8 @@ def thread_worker_poll_fs():
 
             filenames = os.listdir(path)
             time_last_full_dir_listing = time.time()
+            # logging.info(f'completed scan - {len(filenames)}')
+            # print(f'completed scan - {len(filenames)}')
 
             for filename in filenames:
                 if filename in already_written_filenames:
@@ -134,6 +143,7 @@ async def xfer_events_from_fs(name):
 
 
 async def preprocess_async_loop(name, queue):
+    global stats_total_preproc_duration
     count = 0
     try:
         proc = await asyncio.create_subprocess_shell(
@@ -171,7 +181,10 @@ async def preprocess_async_loop(name, queue):
                 file_system_event2.file_size = ben_images.file_utils.get_file_size(output_filepath)
 
                 file_system_event2.golden_bytes_reduction = (
-                                                                        file_system_event.file_size - file_system_event2.file_size) / dur_preproc
+                                                                    file_system_event.file_size - file_system_event2.file_size) / dur_preproc
+
+                stats_total_preproc_duration += dur_preproc
+
                 file_system_event2.preprocessed = True
                 file_system_event2.index = file_system_event.index
 
@@ -271,7 +284,15 @@ async def worker_send_files(name, queue):
 
             filelike = file_system_event.src_path
 
-            response = await send_file(file_system_event, filelike, stream_id_tag, stream_id, username, password, host)
+            if FAKE_UPLOAD:
+                # (only 1 concurrent upload)
+                fake_upload_time = (file_system_event.file_size * 8) / FAKE_UPLOAD_SPEED_BITS_PER_SECOND
+                logging.info(f'Fake sleep for: {fake_upload_time}')
+                await asyncio.sleep(fake_upload_time)
+            else:
+                response = await send_file(file_system_event, filelike, stream_id_tag, stream_id, username, password,
+                                           host)
+                logging.debug(f'Server response body: {response}')
 
             last = time.time()
 
@@ -292,7 +313,6 @@ async def worker_send_files(name, queue):
             else:
                 stats_not_preprocessed_files_sent += 1
 
-            logging.debug(f'Server response body: {response}')
             queue.task_done()
 
             master_queue.notify_file_sent(file_system_event.index)
@@ -303,7 +323,7 @@ async def worker_send_files(name, queue):
             # Benchmarking hack
             if stats_not_preprocessed_files_sent + stats_preprocessed_files_sent == QUIT_AFTER:
                 logging.info(
-                    f'Queue_is_empty. Duration since first event: {time.time() - timestamp_first_event} - total_bytes_sent: {stats_total_bytes_sent}')
+                    f'Queue_is_empty. Duration since first event: {time.time() - timestamp_first_event} - total_bytes_sent: {stats_total_bytes_sent} preprocessed_files_sent: {stats_preprocessed_files_sent} raw_files_sent: {stats_not_preprocessed_files_sent} stats_total_preproc_duration: {stats_total_preproc_duration}')
                 # master_queue.plot()
                 quit()
 

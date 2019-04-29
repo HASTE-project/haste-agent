@@ -3,7 +3,9 @@ import pandas as pd
 from haste.desktop_agent.benchmarking.__main__ import CONFIGS
 import matplotlib.pyplot as plt
 
-RUN = '17_tues_pm2'
+from haste.desktop_agent.config import MODE_NATURAL, MODE_GOLDEN, MODE_SPLINES
+
+RUN = '21_sun_pm'
 
 # grep Queue_is_empty *.log > grepped.txt
 
@@ -15,7 +17,7 @@ with open(f'logs/{RUN}/grepped.txt') as f:
     # assert len(lines) == 25
 
     count_preproc_threads = []
-    splines_enabled = []
+    mode = []
     source_dir = []
     time_taken = []
     bytes_sent = []
@@ -27,46 +29,57 @@ with open(f'logs/{RUN}/grepped.txt') as f:
         print('---')
 
         count_preproc_threads.append(config[0])
-        splines_enabled.append(config[2])
+        mode.append(config[2])
         source_dir.append(config[1].split('/')[-2])
-        time_taken.append(float(line.split(' ')[-4]))
-        bytes_sent.append(float(line.split(' ')[-1]))
+        log_line = line.split(' ')
+
+        # TODO: fix this
+        time_taken.append(float(log_line[14]))
+        bytes_sent.append(float(log_line[17]))
 
 
 data = {
     'count_preproc_threads': count_preproc_threads,
-    'splines_enabled': splines_enabled,
+    'mode': mode,
     'source_dir': source_dir,
     'time_taken': time_taken,
     'bytes_sent': bytes_sent
 }
 df = pd.DataFrame(data,
-                  columns=['count_preproc_threads', 'splines_enabled', 'source_dir', 'time_taken', 'bytes_sent'])
+                  columns=['count_preproc_threads', 'mode', 'source_dir', 'time_taken', 'bytes_sent'])
 
 plt.clf()
 plt.boxplot([
-    df['time_taken'][(df['count_preproc_threads'] == 0) & (df['splines_enabled'] == False) & (df['source_dir'] == 'greyscale')],
+    df['time_taken'][(df['count_preproc_threads'] == 0) & (df['mode'] == MODE_NATURAL) & (df['source_dir'] == 'greyscale')],
 
-    df['time_taken'][(df['count_preproc_threads'] == 1) & (df['splines_enabled'] == True) & (df['source_dir'] == 'greyscale')],
-    df['time_taken'][(df['count_preproc_threads'] == 2) & (df['splines_enabled'] == True) & (df['source_dir'] == 'greyscale')],
-    df['time_taken'][(df['count_preproc_threads'] == 3) & (df['splines_enabled'] == True) & (df['source_dir'] == 'greyscale')],
+    df['time_taken'][(df['count_preproc_threads'] == 1) & (df['mode'] == MODE_GOLDEN) & (df['source_dir'] == 'greyscale')],
+    df['time_taken'][(df['count_preproc_threads'] == 1) & (df['mode'] == MODE_SPLINES) & (df['source_dir'] == 'greyscale')],
+    df['time_taken'][(df['count_preproc_threads'] == 1) & (df['mode'] == MODE_NATURAL) & (df['source_dir'] == 'greyscale')],
 
-    df['time_taken'][(df['count_preproc_threads'] == 1) & (df['splines_enabled'] == False) & (df['source_dir'] == 'greyscale')],
-    df['time_taken'][(df['count_preproc_threads'] == 2) & (df['splines_enabled'] == False) & (df['source_dir'] == 'greyscale')],
-    df['time_taken'][(df['count_preproc_threads'] == 3) & (df['splines_enabled'] == False) & (df['source_dir'] == 'greyscale')],
+    df['time_taken'][(df['count_preproc_threads'] == 2) & (df['mode'] == MODE_GOLDEN) & (df['source_dir'] == 'greyscale')],
+    df['time_taken'][(df['count_preproc_threads'] == 2) & (df['mode'] == MODE_SPLINES) & (df['source_dir'] == 'greyscale')],
+    df['time_taken'][(df['count_preproc_threads'] == 2) & (df['mode'] == MODE_NATURAL) & (df['source_dir'] == 'greyscale')],
+
+    df['time_taken'][(df['count_preproc_threads'] == 3) & (df['mode'] == MODE_GOLDEN) & (df['source_dir'] == 'greyscale')],
+    df['time_taken'][(df['count_preproc_threads'] == 3) & (df['mode'] == MODE_SPLINES) & (df['source_dir'] == 'greyscale')],
+    df['time_taken'][(df['count_preproc_threads'] == 3) & (df['mode'] == MODE_NATURAL) & (df['source_dir'] == 'greyscale')],
 
     df['time_taken'][(df['count_preproc_threads'] == 0) & (df['source_dir'] == 'ffill')],
 ],
     labels=[
-        'g,0,r',
+        'g,0,n',
 
+        'g,1,g',
         'g,1,s',
-        'g,2,s',
-        'g,3,s',
+        'g,1,n',
 
-        'g,1,r',
-        'g,2,r',
-        'g,3,r',
+        'g,2,g',
+        'g,2,s',
+        'g,2,n',
+
+        'g,3,g',
+        'g,3,s',
+        'g,3,n',
 
         'ffill,0',
     ], whis='range'
@@ -75,15 +88,15 @@ plt.savefig(f'figures/{RUN}.0.boxwhisker.time_taken.png')
 
 plt.clf()
 plt.boxplot([
-    df['bytes_sent'][(df['count_preproc_threads'] == 0) & (df['splines_enabled'] == False) & (df['source_dir'] == 'greyscale')],
+    df['bytes_sent'][(df['count_preproc_threads'] == 0) & (df['mode'] == False) & (df['source_dir'] == 'greyscale')],
 
-    df['bytes_sent'][(df['count_preproc_threads'] == 1) & (df['splines_enabled'] == True) & (df['source_dir'] == 'greyscale')],
-    df['bytes_sent'][(df['count_preproc_threads'] == 2) & (df['splines_enabled'] == True) & (df['source_dir'] == 'greyscale')],
-    df['bytes_sent'][(df['count_preproc_threads'] == 3) & (df['splines_enabled'] == True) & (df['source_dir'] == 'greyscale')],
+    df['bytes_sent'][(df['count_preproc_threads'] == 1) & (df['mode'] == True) & (df['source_dir'] == 'greyscale')],
+    df['bytes_sent'][(df['count_preproc_threads'] == 2) & (df['mode'] == True) & (df['source_dir'] == 'greyscale')],
+    df['bytes_sent'][(df['count_preproc_threads'] == 3) & (df['mode'] == True) & (df['source_dir'] == 'greyscale')],
 
-    df['bytes_sent'][(df['count_preproc_threads'] == 1) & (df['splines_enabled'] == False) & (df['source_dir'] == 'greyscale')],
-    df['bytes_sent'][(df['count_preproc_threads'] == 2) & (df['splines_enabled'] == False) & (df['source_dir'] == 'greyscale')],
-    df['bytes_sent'][(df['count_preproc_threads'] == 3) & (df['splines_enabled'] == False) & (df['source_dir'] == 'greyscale')],
+    df['bytes_sent'][(df['count_preproc_threads'] == 1) & (df['mode'] == False) & (df['source_dir'] == 'greyscale')],
+    df['bytes_sent'][(df['count_preproc_threads'] == 2) & (df['mode'] == False) & (df['source_dir'] == 'greyscale')],
+    df['bytes_sent'][(df['count_preproc_threads'] == 3) & (df['mode'] == False) & (df['source_dir'] == 'greyscale')],
 
     df['bytes_sent'][(df['count_preproc_threads'] == 0) & (df['source_dir'] == 'ffill')],
 ],
@@ -112,15 +125,15 @@ plt.savefig(f'figures/{RUN}.1.all_times.png')
 
 plt.clf()
 plt.boxplot([
-    df['bytes_sent'][(df['count_preproc_threads'] == 0) & (df['splines_enabled'] == False) & (df['source_dir'] == 'greyscale')]/df['time_taken'][(df['count_preproc_threads'] == 0) & (df['splines_enabled'] == False) & (df['source_dir'] == 'greyscale')],
+    df['bytes_sent'][(df['count_preproc_threads'] == 0) & (df['mode'] == False) & (df['source_dir'] == 'greyscale')]/df['time_taken'][(df['count_preproc_threads'] == 0) & (df['mode'] == False) & (df['source_dir'] == 'greyscale')],
 
-    df['bytes_sent'][(df['count_preproc_threads'] == 1) & (df['splines_enabled'] == True) & (df['source_dir'] == 'greyscale')]/df['time_taken'][(df['count_preproc_threads'] == 1) & (df['splines_enabled'] == True) & (df['source_dir'] == 'greyscale')],
-    df['bytes_sent'][(df['count_preproc_threads'] == 2) & (df['splines_enabled'] == True) & (df['source_dir'] == 'greyscale')]/df['time_taken'][(df['count_preproc_threads'] == 2) & (df['splines_enabled'] == True) & (df['source_dir'] == 'greyscale')],
-    df['bytes_sent'][(df['count_preproc_threads'] == 3) & (df['splines_enabled'] == True) & (df['source_dir'] == 'greyscale')]/df['time_taken'][(df['count_preproc_threads'] == 3) & (df['splines_enabled'] == True) & (df['source_dir'] == 'greyscale')],
+    df['bytes_sent'][(df['count_preproc_threads'] == 1) & (df['mode'] == True) & (df['source_dir'] == 'greyscale')]/df['time_taken'][(df['count_preproc_threads'] == 1) & (df['mode'] == True) & (df['source_dir'] == 'greyscale')],
+    df['bytes_sent'][(df['count_preproc_threads'] == 2) & (df['mode'] == True) & (df['source_dir'] == 'greyscale')]/df['time_taken'][(df['count_preproc_threads'] == 2) & (df['mode'] == True) & (df['source_dir'] == 'greyscale')],
+    df['bytes_sent'][(df['count_preproc_threads'] == 3) & (df['mode'] == True) & (df['source_dir'] == 'greyscale')]/df['time_taken'][(df['count_preproc_threads'] == 3) & (df['mode'] == True) & (df['source_dir'] == 'greyscale')],
 
-    df['bytes_sent'][(df['count_preproc_threads'] == 1) & (df['splines_enabled'] == False) & (df['source_dir'] == 'greyscale')]/df['time_taken'][(df['count_preproc_threads'] == 1) & (df['splines_enabled'] == False) & (df['source_dir'] == 'greyscale')],
-    df['bytes_sent'][(df['count_preproc_threads'] == 2) & (df['splines_enabled'] == False) & (df['source_dir'] == 'greyscale')]/df['time_taken'][(df['count_preproc_threads'] == 2) & (df['splines_enabled'] == False) & (df['source_dir'] == 'greyscale')],
-    df['bytes_sent'][(df['count_preproc_threads'] == 3) & (df['splines_enabled'] == False) & (df['source_dir'] == 'greyscale')]/df['time_taken'][(df['count_preproc_threads'] == 3) & (df['splines_enabled'] == False) & (df['source_dir'] == 'greyscale')],
+    df['bytes_sent'][(df['count_preproc_threads'] == 1) & (df['mode'] == False) & (df['source_dir'] == 'greyscale')]/df['time_taken'][(df['count_preproc_threads'] == 1) & (df['mode'] == False) & (df['source_dir'] == 'greyscale')],
+    df['bytes_sent'][(df['count_preproc_threads'] == 2) & (df['mode'] == False) & (df['source_dir'] == 'greyscale')]/df['time_taken'][(df['count_preproc_threads'] == 2) & (df['mode'] == False) & (df['source_dir'] == 'greyscale')],
+    df['bytes_sent'][(df['count_preproc_threads'] == 3) & (df['mode'] == False) & (df['source_dir'] == 'greyscale')]/df['time_taken'][(df['count_preproc_threads'] == 3) & (df['mode'] == False) & (df['source_dir'] == 'greyscale')],
 
     df['bytes_sent'][(df['count_preproc_threads'] == 0) & (df['source_dir'] == 'ffill')]/df['time_taken'][(df['count_preproc_threads'] == 0) & (df['source_dir'] == 'ffill')],
 ],

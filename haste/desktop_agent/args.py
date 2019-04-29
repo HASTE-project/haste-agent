@@ -19,7 +19,7 @@ def parse_args():
     parser.add_argument('--password', type=str, nargs='?', help='Password for HASTE')
 
     parser.add_argument('--x-preprocessing-cores', default=1, type=int)
-    parser.add_argument('--x-disable-prioritization', dest='prio', action='store_false', help='Turn off the splines-based pre-proc estimator for the prio queue.')
+    parser.add_argument('--x-mode', default=1, type=int)
     parser.set_defaults(prio=True)
 
     args = parser.parse_args()
@@ -39,7 +39,6 @@ def initialize():
                         format=LOGGING_FORMAT_AGENT,
                         datefmt=LOGGING_FORMAT_DATE)
 
-
     args = parse_args()
     path = args.path[0]
 
@@ -53,8 +52,7 @@ def initialize():
     host = args.host
 
     x_preprocessing_cores = args.x_preprocessing_cores
-    x_enable_prioritization = args.prio
-
+    x_mode = args.x_mode
 
     # TODO: generate new stream_id after long pause in new images?
 
@@ -69,13 +67,16 @@ def initialize():
 
     logging.getLogger('').addHandler(file_logger)
 
+    logging.getLogger('').addHandler(logging.StreamHandler())
+
     logging.debug(f'command line args arg: {sys.argv}')
     logging.info(f'stream_id: {stream_id}')
 
-
-    logging.info(f'x_enable_prioritization: {x_enable_prioritization}')
+    logging.info(f'x_mode: {x_mode}')
     logging.info(f'preprocessing_cores: {x_preprocessing_cores}')
 
     logging.info(f'simulator_frequency (incase simulator used): {FREQUENCY}')
 
-    return path, dot_and_extension, stream_id_tag, username, password, host, stream_id, x_preprocessing_cores, x_enable_prioritization
+    logging.debug(f'command line args arg: {sys.argv}')
+
+    return path, dot_and_extension, stream_id_tag, username, password, host, stream_id, x_preprocessing_cores, x_mode

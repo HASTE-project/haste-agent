@@ -8,17 +8,21 @@ import sys
 
 # num_preproc_core, source_dir, enable_prio_by_splines
 CONFIGS = [
-    (0, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/', False),
+    (0, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/', haste.desktop_agent.config.MODE_NATURAL),
 
-    (1, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/', True),
-    (2, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/', True),
-    (3, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/', True),
+    (1, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/', haste.desktop_agent.config.MODE_SPLINES),
+    (1, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/', haste.desktop_agent.config.MODE_NATURAL),
+    (1, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/', haste.desktop_agent.config.MODE_GOLDEN),
 
-    (1, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/', False),
-    (2, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/', False),
-    (3, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/', False),
+    (2, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/', haste.desktop_agent.config.MODE_SPLINES),
+    (2, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/', haste.desktop_agent.config.MODE_NATURAL),
+    (2, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/', haste.desktop_agent.config.MODE_GOLDEN),
 
-    (0, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/ffill/', False),
+    (3, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/', haste.desktop_agent.config.MODE_SPLINES),
+    (3, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/', haste.desktop_agent.config.MODE_NATURAL),
+    (3, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/', haste.desktop_agent.config.MODE_GOLDEN),
+
+    (0, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/ffill/', haste.desktop_agent.config.MODE_NATURAL),
 ]
 
 
@@ -37,8 +41,10 @@ async def main():
         for j, c in enumerate(CONFIGS):
             logging.info(f'Starting Benchmarking Run {i}.{j}')
 
+            num_threads, source_dir, mode = c
+
             proc_simulator = await asyncio.create_subprocess_exec(
-                sys.executable, '-m', 'haste.desktop_agent.simulator', c[1])
+                sys.executable, '-m', 'haste.desktop_agent.simulator', source_dir)
 
             await asyncio.sleep(5)
 
@@ -50,9 +56,10 @@ async def main():
                    '--username', 'haste',
                    '--password', 'mr_frumbles_bad_day',
                    haste.desktop_agent.config.TARGET_DIR,
-                   '--x-preprocessing-cores', str(c[0])]
-            if not c[2]:
-                cmd.append("--x-disable-prioritization")
+                   '--x-preprocessing-cores', str(num_threads),
+                   '--x-mode', str(mode)]
+            # if not c[2]:
+            #     cmd.append("--x-disable-prioritization")
 
             logging.info(cmd)
             proc_agent = await asyncio.create_subprocess_exec(*cmd)

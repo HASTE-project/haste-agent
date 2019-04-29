@@ -27,16 +27,32 @@ spline_states = []
 # 2019-03-25 15:59:02.253 - AGENT - MainThread - INFO - PLOT_QUEUE - 1553525942.2393758 - POP_PREPROCESS - 18
 # 2019-03-25 15:59:02.253 - AGENT - MainThread - INFO - PLOT_QUEUE - 1553525942.253982 - POP_SEND - 49
 
-run = '15_mon_pm'
-stream_id = 'agent_log_2019_04_15__18_59_55_trash'#'2019_03_29__11_18_21_trash'
+run = None
+
+run = '20_sun_pm'
+
+
+stream_id = 'agent_log_2019_04_28__21_50_47_trash.log'#'2019_03_29__11_18_21_trash'
 
 stream_id = stream_id.replace('agent_log_', '')
+stream_id = stream_id.replace('.log', '')
+
+if run is not None:
+    filename = f'logs/{run}/agent_log_{stream_id}.log'
+else:
+    filename = f'../../../logs/agent_log_{stream_id}.log'
+
+if not filename.endswith('.log'):
+    filename += '.log'
 
 print(os.getcwd())
 
 # with open(f'logs/2_tues_am_office/agent_log_2019_03_26__10_10_21_trash.log') as f:
-with open(f'logs/{run}/agent_log_{stream_id}.log') as f:
+with open(filename) as f:
     for line in f.readlines():
+
+        if line == '\n':
+            continue
 
         if 'known_scores_are' in line:
             s = line.split('*')
@@ -134,6 +150,8 @@ def fit_spline(known_scores):
 
 plt.clf()
 plt.figure(figsize=(7, 3.5), dpi=500)
+
+quit()
 
 if True:
     X2 = np.arange(0, capacity, 1)

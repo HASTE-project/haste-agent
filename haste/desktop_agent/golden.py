@@ -3,7 +3,7 @@ import time
 import pandas as pd
 
 csv_results = pd.read_csv(
-    '/Users/benblamey/projects/haste/vironova-image-compression/results/viron_2019_02_04__11_34_55.csv',
+    '/Users/benblamey/projects/haste/vironova-image-compression/results/scanlines-viron_2019_02_04__11_34_55.csv',
     header=None,
     names=[
         'filename',

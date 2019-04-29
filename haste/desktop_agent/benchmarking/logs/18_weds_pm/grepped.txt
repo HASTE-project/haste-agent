@@ -1,0 +1,53 @@
+agent_log_2019_04_24__13_43_52_trash.log:2019-04-24 13:44:13.243 - AGENT - MainThread - INFO - Queue_is_empty. Duration since first event: 16.21138596534729 - total_bytes_sent: 48119663 preprocessed_files_sent: 0 raw_files_sent: 100
+
+agent_log_2019_04_24__13_44_22_trash.log:2019-04-24 13:44:41.243 - AGENT - MainThread - INFO - Queue_is_empty. Duration since first event: 14.831998825073242 - total_bytes_sent: 44230847 preprocessed_files_sent: 21 raw_files_sent: 79
+agent_log_2019_04_24__13_44_50_trash.log:2019-04-24 13:45:10.243 - AGENT - MainThread - INFO - Queue_is_empty. Duration since first event: 15.174598932266235 - total_bytes_sent: 45159042 preprocessed_files_sent: 26 raw_files_sent: 74
+agent_log_2019_04_24__13_45_19_trash.log:2019-04-24 13:45:39.243 - AGENT - MainThread - INFO - Queue_is_empty. Duration since first event: 15.541945219039917 - total_bytes_sent: 45041384 preprocessed_files_sent: 15 raw_files_sent: 85
+
+agent_log_2019_04_24__13_45_48_trash.log:2019-04-24 13:46:08.243 - AGENT - MainThread - INFO - Queue_is_empty. Duration since first event: 14.417731761932373 - total_bytes_sent: 42884138 preprocessed_files_sent: 30 raw_files_sent: 70
+agent_log_2019_04_24__13_46_17_trash.log:2019-04-24 13:46:36.243 - AGENT - MainThread - INFO - Queue_is_empty. Duration since first event: 14.46852707862854 - total_bytes_sent: 42932445 preprocessed_files_sent: 42 raw_files_sent: 58
+agent_log_2019_04_24__13_46_45_trash.log:2019-04-24 13:47:04.243 - AGENT - MainThread - INFO - Queue_is_empty. Duration since first event: 14.851076126098633 - total_bytes_sent: 42975274 preprocessed_files_sent: 26 raw_files_sent: 74
+
+agent_log_2019_04_24__13_47_13_trash.log:2019-04-24 13:47:32.243 - AGENT - MainThread - INFO - Queue_is_empty. Duration since first event: 14.616873979568481 - total_bytes_sent: 43441984 preprocessed_files_sent: 28 raw_files_sent: 72
+agent_log_2019_04_24__13_47_41_trash.log:2019-04-24 13:48:00.243 - AGENT - MainThread - INFO - Queue_is_empty. Duration since first event: 14.090872764587402 - total_bytes_sent: 41574053 preprocessed_files_sent: 55 raw_files_sent: 45
+agent_log_2019_04_24__13_48_09_trash.log:2019-04-24 13:48:27.243 - AGENT - MainThread - INFO - Queue_is_empty. Duration since first event: 13.499058961868286 - total_bytes_sent: 40314717 preprocessed_files_sent: 42 raw_files_sent: 58
+agent_log_2019_04_24__13_48_36_trash.log:2019-04-24 13:48:52.243 - AGENT - MainThread - INFO - Queue_is_empty. Duration since first event: 11.33352518081665 - total_bytes_sent: 33785680 preprocessed_files_sent: 0 raw_files_sent: 100
+
+agent_log_2019_04_24__13_49_11_trash.log:2019-04-24 13:49:32.243 - AGENT - MainThread - INFO - Queue_is_empty. Duration since first event: 16.162513971328735 - total_bytes_sent: 48119663 preprocessed_files_sent: 0 raw_files_sent: 100
+
+agent_log_2019_04_24__13_49_41_trash.log:2019-04-24 13:50:01.243 - AGENT - MainThread - INFO - Queue_is_empty. Duration since first event: 15.27147912979126 - total_bytes_sent: 44575258 preprocessed_files_sent: 21 raw_files_sent: 79
+agent_log_2019_04_24__13_50_09_trash.log:2019-04-24 13:50:30.243 - AGENT - MainThread - INFO - Queue_is_empty. Duration since first event: 15.146617889404297 - total_bytes_sent: 44655419 preprocessed_files_sent: 29 raw_files_sent: 71
+agent_log_2019_04_24__13_50_38_trash.log:2019-04-24 13:50:58.243 - AGENT - MainThread - INFO - Queue_is_empty. Duration since first event: 14.829292058944702 - total_bytes_sent: 44105482 preprocessed_files_sent: 20 raw_files_sent: 80
+
+agent_log_2019_04_24__13_51_07_trash.log:2019-04-24 13:51:25.243 - AGENT - MainThread - INFO - Queue_is_empty. Duration since first event: 13.594088315963745 - total_bytes_sent: 40486919 preprocessed_files_sent: 42 raw_files_sent: 58
+agent_log_2019_04_24__13_51_34_trash.log:2019-04-24 13:51:53.243 - AGENT - MainThread - INFO - Queue_is_empty. Duration since first event: 14.000870943069458 - total_bytes_sent: 41675876 preprocessed_files_sent: 54 raw_files_sent: 46
+agent_log_2019_04_24__13_52_02_trash.log:2019-04-24 13:52:20.243 - AGENT - MainThread - INFO - Queue_is_empty. Duration since first event: 13.449043035507202 - total_bytes_sent: 39994150 preprocessed_files_sent: 44 raw_files_sent: 56
+
+agent_log_2019_04_24__13_52_29_trash.log:2019-04-24 13:52:47.243 - AGENT - MainThread - INFO - Queue_is_empty. Duration since first event: 13.503952980041504 - total_bytes_sent: 39948716 preprocessed_files_sent: 46 raw_files_sent: 54
+agent_log_2019_04_24__13_52_56_trash.log:2019-04-24 13:53:15.243 - AGENT - MainThread - INFO - Queue_is_empty. Duration since first event: 13.668097019195557 - total_bytes_sent: 40870194 preprocessed_files_sent: 58 raw_files_sent: 42
+agent_log_2019_04_24__13_53_23_trash.log:2019-04-24 13:53:42.243 - AGENT - MainThread - INFO - Queue_is_empty. Duration since first event: 13.473885774612427 - total_bytes_sent: 39993093 preprocessed_files_sent: 44 raw_files_sent: 56
+
+agent_log_2019_04_24__13_53_50_trash.log:2019-04-24 13:54:07.243 - AGENT - MainThread - INFO - Queue_is_empty. Duration since first event: 11.351517915725708 - total_bytes_sent: 33785680 preprocessed_files_sent: 0 raw_files_sent: 100
+agent_log_2019_04_24__13_54_25_trash.log:2019-04-24 13:54:47.243 - AGENT - MainThread - INFO - Queue_is_empty. Duration since first event: 16.142040252685547 - total_bytes_sent: 48119663 preprocessed_files_sent: 0 raw_files_sent: 100
+
+agent_log_2019_04_24__13_54_55_trash.log:2019-04-24 13:55:15.243 - AGENT - MainThread - INFO - Queue_is_empty. Duration since first event: 14.901257991790771 - total_bytes_sent: 43788511 preprocessed_files_sent: 23 raw_files_sent: 77
+agent_log_2019_04_24__13_55_24_trash.log:2019-04-24 13:55:44.243 - AGENT - MainThread - INFO - Queue_is_empty. Duration since first event: 15.164130687713623 - total_bytes_sent: 45125227 preprocessed_files_sent: 25 raw_files_sent: 75
+agent_log_2019_04_24__13_55_53_trash.log:2019-04-24 13:56:12.243 - AGENT - MainThread - INFO - Queue_is_empty. Duration since first event: 14.765750885009766 - total_bytes_sent: 43896522 preprocessed_files_sent: 21 raw_files_sent: 79
+
+agent_log_2019_04_24__13_56_21_trash.log:2019-04-24 13:56:41.243 - AGENT - MainThread - INFO - Queue_is_empty. Duration since first event: 14.570409059524536 - total_bytes_sent: 43447955 preprocessed_files_sent: 27 raw_files_sent: 73
+agent_log_2019_04_24__13_56_49_trash.log:2019-04-24 13:57:09.243 - AGENT - MainThread - INFO - Queue_is_empty. Duration since first event: 14.107574939727783 - total_bytes_sent: 42081838 preprocessed_files_sent: 51 raw_files_sent: 49
+agent_log_2019_04_24__13_57_17_trash.log:2019-04-24 13:57:36.243 - AGENT - MainThread - INFO - Queue_is_empty. Duration since first event: 13.582544088363647 - total_bytes_sent: 40473509 preprocessed_files_sent: 41 raw_files_sent: 59
+
+agent_log_2019_04_24__13_57_44_trash.log:2019-04-24 13:58:04.243 - AGENT - MainThread - INFO - Queue_is_empty. Duration since first event: 14.053904056549072 - total_bytes_sent: 41704900 preprocessed_files_sent: 37 raw_files_sent: 63
+agent_log_2019_04_24__13_58_12_trash.log:2019-04-24 13:58:31.243 - AGENT - MainThread - INFO - Queue_is_empty. Duration since first event: 13.87182092666626 - total_bytes_sent: 41532387 preprocessed_files_sent: 55 raw_files_sent: 45
+agent_log_2019_04_24__13_58_40_trash.log:2019-04-24 13:58:59.243 - AGENT - MainThread - INFO - Queue_is_empty. Duration since first event: 13.606806993484497 - total_bytes_sent: 40158358 preprocessed_files_sent: 43 raw_files_sent: 57
+
+agent_log_2019_04_24__13_59_07_trash.log:2019-04-24 13:59:24.243 - AGENT - MainThread - INFO - Queue_is_empty. Duration since first event: 11.351240873336792 - total_bytes_sent: 33785680 preprocessed_files_sent: 0 raw_files_sent: 100
+agent_log_2019_04_24__13_59_42_trash.log:2019-04-24 14:00:04.243 - AGENT - MainThread - INFO - Queue_is_empty. Duration since first event: 16.360912084579468 - total_bytes_sent: 48119663 preprocessed_files_sent: 0 raw_files_sent: 100
+
+agent_log_2019_04_24__14_00_12_trash.log:2019-04-24 14:00:32.243 - AGENT - MainThread - INFO - Queue_is_empty. Duration since first event: 14.82199501991272 - total_bytes_sent: 43973644 preprocessed_files_sent: 22 raw_files_sent: 78
+agent_log_2019_04_24__14_00_41_trash.log:2019-04-24 14:01:01.243 - AGENT - MainThread - INFO - Queue_is_empty. Duration since first event: 15.108113050460815 - total_bytes_sent: 44785994 preprocessed_files_sent: 28 raw_files_sent: 72
+agent_log_2019_04_24__14_01_09_trash.log:2019-04-24 14:01:29.243 - AGENT - MainThread - INFO - Queue_is_empty. Duration since first event: 14.782813310623169 - total_bytes_sent: 43896522 preprocessed_files_sent: 21 raw_files_sent: 79
+
+agent_log_2019_04_24__14_01_38_trash.log:2019-04-24 14:01:57.243 - AGENT - MainThread - INFO - Queue_is_empty. Duration since first event: 13.646540641784668 - total_bytes_sent: 40641827 preprocessed_files_sent: 42 raw_files_sent: 58
+agent_log_2019_04_24__14_02_05_trash.log:2019-04-24 14:02:24.243 - AGENT - MainThread - INFO - Queue_is_empty. Duration since first event: 14.018635034561157 - total_bytes_sent: 41627832 preprocessed_files_sent: 54 raw_files_sent: 46
