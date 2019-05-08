@@ -12,7 +12,7 @@ from haste.desktop_agent.master_queue import MasterQueue
 from watchdog.observers import Observer
 import asyncio
 import logging
-import ben_images.file_utils
+import vironova_image_compression.ben_images.file_utils
 from haste.desktop_agent.FSEvents import HasteFSEventHandler
 from haste.desktop_agent.args import initialize
 from haste.desktop_agent.config import MAX_CONCURRENT_XFERS, QUIT_AFTER, DELETE, FAKE_UPLOAD, \
@@ -109,7 +109,7 @@ def put_event_on_queue(event):
         event.golden_bytes_reduction = get_golden_prio_for_filename(src_path.split('/')[-1])
 
     event.preprocessed = False
-    event.file_size = ben_images.file_utils.get_file_size(event.src_path)
+    event.file_size = vironova_image_compression.ben_images.file_utils.get_file_size(event.src_path)
 
     # Queue never full, has infinite capacity.
     events_to_process_mt_queue.put(event, block=True)
@@ -142,7 +142,84 @@ async def xfer_events_from_fs(name):
         print(ex)
 
 
-async def preprocess_async_loop(name, queue):
+async def preprocess_async_loop_new_proc(name, queue):
+    global stats_total_preproc_duration
+    count = 0
+    try:
+
+        while True:
+            file_system_event = await pop_event(True)
+
+            if file_system_event is not None:
+                logging.info(f'preprocessing: {file_system_event.src_path}')
+
+                output_filepath = '/tmp/' + file_system_event.src_path.split('/')[-1]
+
+                # line_to_send = f"{file_system_event.src_path},{output_filepath}\n"
+                #
+                # # add to the buffer
+                # proc.stdin.write(line_to_send.encode())
+                # await proc.stdin.drain()
+                #
+                # stdoutline = await proc.stdout.readline()
+                # stdoutline = stdoutline.decode().strip()
+                # logging.info(f'stdout from preprocessor: {stdoutline}')
+                #
+                # dur_preproc = float(stdoutline.split(',')[0])
+                # dur_waiting = float(stdoutline.split(',')[1])
+                # logging.debug(f'preprocessor waiting: {dur_waiting}')
+
+                time_start = time.time()
+
+                proc = await asyncio.create_subprocess_shell(
+                    f'python3 -m vironova_image_compression.ben_images.threshold_overwrite {file_system_event.src_path} {output_filepath}',
+                    stdout=asyncio.subprocess.PIPE,
+                    stdin=asyncio.subprocess.PIPE)
+
+                # Wait for it to terminate.
+                await proc.wait()
+
+                dur_preproc = time.time() - time_start
+
+                file_system_event2 = SimpleNamespace()
+                file_system_event2.timestamp = time.time()
+                file_system_event2.src_path = output_filepath
+
+                file_system_event2.file_size = vironova_image_compression.ben_images.file_utils.get_file_size(output_filepath)
+
+                file_system_event2.golden_bytes_reduction = (
+                                                                    file_system_event.file_size - file_system_event2.file_size) / dur_preproc
+
+                stats_total_preproc_duration += dur_preproc
+
+                file_system_event2.preprocessed = True
+                file_system_event2.index = file_system_event.index
+
+                event_to_re_add = file_system_event2
+
+                count += 1
+                logging.info(f'preprocessed {count} files')
+
+                if DELETE:
+                    os.unlink(file_system_event.src_path)
+
+            else:
+                # We've preprocessed everything. just re-add the original event.
+                event_to_re_add = file_system_event
+
+            await push_event(event_to_re_add)
+            queue.task_done()
+
+            # We've preprocessed everything for now. just re-add the original event and 'sleep' a little.
+            if file_system_event is None:
+                await asyncio.sleep(0.2)
+
+    except Exception as ex:
+        logging.error(traceback.format_exc())
+        raise ex
+
+
+async def preprocess_async_loop_service(name, queue):
     global stats_total_preproc_duration
     count = 0
     try:
@@ -178,7 +255,7 @@ async def preprocess_async_loop(name, queue):
                 file_system_event2.timestamp = time.time()
                 file_system_event2.src_path = output_filepath
 
-                file_system_event2.file_size = ben_images.file_utils.get_file_size(output_filepath)
+                file_system_event2.file_size = vironova_image_compression.ben_images.file_utils.get_file_size(output_filepath)
 
                 file_system_event2.golden_bytes_reduction = (
                                                                     file_system_event.file_size - file_system_event2.file_size) / dur_preproc
@@ -358,7 +435,11 @@ async def main():
     tasks.append(task)
 
     for i in range(x_preprocessing_cores):
-        task = asyncio.create_task(preprocess_async_loop(f'preprocess-{i}', events_to_process_async_queue))
+        if False:
+            task = asyncio.create_task(preprocess_async_loop_service(f'preprocess-{i}', events_to_process_async_queue))
+        else:
+            task = asyncio.create_task(preprocess_async_loop_new_proc(f'preprocess-{i}', events_to_process_async_queue))
+
         tasks.append(task)
 
     for i in range(MAX_CONCURRENT_XFERS):

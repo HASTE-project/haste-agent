@@ -29,10 +29,10 @@ spline_states = []
 
 run = None
 
-run = '20_sun_pm'
+run = '2019_04_29-03'
 
 
-stream_id = 'agent_log_2019_04_28__21_50_47_trash.log'#'2019_03_29__11_18_21_trash'
+stream_id = 'agent_log_2019_04_29__10_29_35_trash.log.log.log.log'#'2019_03_29__11_18_21_trash'
 
 stream_id = stream_id.replace('agent_log_', '')
 stream_id = stream_id.replace('.log', '')
