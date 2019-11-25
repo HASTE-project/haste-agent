@@ -6,9 +6,11 @@ from types import SimpleNamespace
 import os
 import traceback
 
+from haste_storage_client.haste_priority_queue_client import HastePriorityQueueClient
+
 from haste.desktop_agent import golden
 from haste.desktop_agent.golden import get_golden_prio_for_filename
-from haste.desktop_agent.master_queue import MasterQueue
+
 from watchdog.observers import Observer
 import asyncio
 import logging
@@ -40,10 +42,24 @@ ground_truth = golden.csv_results[0:QUIT_AFTER]
 golden_estimated_scores = (ground_truth['input_file_size_bytes'] - ground_truth[
     'output_file_size_bytes']) / ground_truth['duration_total']
 
-master_queue = MasterQueue(QUIT_AFTER, x_mode, golden_estimated_scores)
+queue_client = HastePriorityQueueClient(QUIT_AFTER, x_mode, golden_estimated_scores)
 
 time_last_full_dir_listing = -1
 TOO_LONG = 0.005
+
+
+def new_file(info):
+    # Align the info from the watchdog to the HASTE API.
+
+    info.timestamp = time.time()
+    info.location = 0
+    info.original_filename = info.src_path
+
+    queue_client.save(timestamp=info.timestamp,
+                      location=info.location,
+                      substream_id=None,
+                      blob_bytes=None,
+                      metadata=info)
 
 
 def thread_worker_poll_fs():
@@ -309,11 +325,11 @@ async def push_event(event_to_re_add):
             f'push_event() - raw:{stats_events_pushed_second_queue_raw}')
 
         if event_to_re_add.preprocessed:
-            master_queue.notify_file_preprocessed(event_to_re_add.index, event_to_re_add.golden_bytes_reduction,
-                                                  event_to_re_add)
+            queue_client.notify_preprocessed(event_to_re_add.index, event_to_re_add.golden_bytes_reduction,
+                                             event_to_re_add)
         else:
 
-            master_queue.new_file(event_to_re_add)
+            new_file(event_to_re_add)
 
     return await events_to_process_async_queue.put(object())
 
@@ -323,9 +339,9 @@ async def pop_event(for_preprocessing):
 
     start = time.time()
     if for_preprocessing:
-        index, result = master_queue.pop_file_to_preprocess()
+        index, result = queue_client.next_to_preprocess()
     else:
-        index, result = master_queue.pop_file_to_send()
+        index, result = queue_client.pop_for_sending()
 
     logging.debug(f'popping_took: {time.time() - start}')
 
@@ -392,7 +408,7 @@ async def worker_send_files(name, queue):
 
             queue.task_done()
 
-            master_queue.notify_file_sent(file_system_event.index)
+            queue_client.notify_file_sent(file_system_event.index)
 
             logging.info(
                 f'total_bytes_sent: {stats_total_bytes_sent} preprocessed_files_sent: {stats_preprocessed_files_sent} raw_files_sent: {stats_not_preprocessed_files_sent}')
