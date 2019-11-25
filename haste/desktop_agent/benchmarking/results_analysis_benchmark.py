@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 from haste.desktop_agent.config import MODE_NATURAL, MODE_GOLDEN, MODE_SPLINES
 
-RUN = '2019_04_29-03'
+RUN = '2019_05_08-01'
 
 # grep Queue_is_empty *.log > grepped.txt
 
