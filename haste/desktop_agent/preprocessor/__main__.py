@@ -10,6 +10,8 @@ from sys import stdin
 
 from haste.desktop_agent.config import LOGGING_FORMAT_DATE, LOGGING_FORMAT_AGENT
 
+# NOTE: THE PRE-PROCESSING IS RUN FROM ANOTHER MODULE
+
 
 def convert_file(input_filepath, output_filepath):
     img = Image.open(input_filepath)

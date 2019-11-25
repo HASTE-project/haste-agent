@@ -19,6 +19,7 @@ from haste.desktop_agent.FSEvents import HasteFSEventHandler
 from haste.desktop_agent.args import initialize
 from haste.desktop_agent.config import MAX_CONCURRENT_XFERS, QUIT_AFTER, DELETE, FAKE_UPLOAD, \
     FAKE_UPLOAD_SPEED_BITS_PER_SECOND
+from haste.desktop_agent.interestingness_model import EstimatedPreprocessingEfficacyInterestingnessModel
 from haste.desktop_agent.post_file import send_file
 
 # TODO: store timestamps also and clear the old ones
@@ -42,7 +43,8 @@ ground_truth = golden.csv_results[0:QUIT_AFTER]
 golden_estimated_scores = (ground_truth['input_file_size_bytes'] - ground_truth[
     'output_file_size_bytes']) / ground_truth['duration_total']
 
-queue_client = HastePriorityQueueClient(QUIT_AFTER, x_mode, golden_estimated_scores)
+interestingness_model = EstimatedPreprocessingEfficacyInterestingnessModel()
+queue_client = HastePriorityQueueClient(QUIT_AFTER, x_mode, golden_estimated_scores, interestingess_model=interestingness_model)
 
 time_last_full_dir_listing = -1
 TOO_LONG = 0.005
@@ -408,7 +410,7 @@ async def worker_send_files(name, queue):
 
             queue.task_done()
 
-            queue_client.notify_file_sent(file_system_event.index)
+            queue_client.notify_popped(file_system_event.index)
 
             logging.info(
                 f'total_bytes_sent: {stats_total_bytes_sent} preprocessed_files_sent: {stats_preprocessed_files_sent} raw_files_sent: {stats_not_preprocessed_files_sent}')
