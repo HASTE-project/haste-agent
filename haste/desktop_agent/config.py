@@ -3,6 +3,10 @@ LOGGING_FORMAT_DATE = '%Y-%m-%d %H:%M:%S.%d3'
 LOGGING_FORMAT_AGENT = '%(asctime)s - AGENT - %(threadName)s - %(levelname)s - %(message)s'
 
 
+MODE_SPLINES = 0
+MODE_NATURAL = 1
+MODE_GOLDEN = 2
+
 
 
 FAKE_UPLOAD = False

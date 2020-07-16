@@ -4,6 +4,14 @@ from haste.desktop_agent import golden
 from haste.desktop_agent.benchmarking.__main__ import CONFIGS
 import matplotlib.pyplot as plt
 
+# See haste storage client
+STATE_NONE = 0
+STATE_IN_QUEUE_NOT_PRE_PROCESSED = 1
+STATE_PRE_PROCESSING = 2
+STATE_IN_QUEUE_PRE_PROCESSED = 3
+STATE_POPPING = 4
+STATE_POPPED = 5
+
 # grep Queue_is_empty *.log
 from haste.desktop_agent.config import QUIT_AFTER
 import matplotlib.pyplot as plt
@@ -29,10 +37,15 @@ spline_states = []
 
 run = None
 
-run = '2019_04_29-03'
+# run = '2019_04_29-03'
+run = '11_fri_am'
 
 
-stream_id = 'agent_log_2019_04_29__10_29_35_trash.log.log.log.log'#'2019_03_29__11_18_21_trash'
+# plt.style.use('grayscale')
+
+
+# stream_id = 'agent_log_2019_04_29__10_29_35_trash.log.log.log.log'#'2019_03_29__11_18_21_trash'
+stream_id = 'agent_log_2019_03_29__11_18_21_trash'#'2019_03_29__11_18_21_trash'
 
 stream_id = stream_id.replace('agent_log_', '')
 stream_id = stream_id.replace('.log', '')
@@ -92,25 +105,39 @@ golden_compressibility = (golden.csv_results['input_file_size_bytes'] - golden.c
                              'duration_total']
 golden_compressibility = golden_compressibility[:QUIT_AFTER]
 golden_compressibility = np.array(golden_compressibility)
+
+
 golden_compressibility_tiled = np.tile(golden_compressibility, (4, 1))
 golden_compressibility_tiled = np.transpose(golden_compressibility_tiled)
 
 fig, ax2 = plt.subplots()
 
-ax2.imshow(golden_compressibility_tiled, interpolation='nearest', aspect='auto', zorder=3)
-ax2.legend()
+ax2.imshow(golden_compressibility_tiled, interpolation='nearest', aspect='auto', zorder=3, alpha=0.3)
+# ax2.legend()
+
+
 
 ax = ax2.twiny()
-ax.plot(x_new_file_times, y_new_file_indices, color='r', zorder=2, label='new_files')
-ax.scatter(x_send_times, y_send_indices, color='m', zorder=2, label='send')
-ax.scatter(x_preprocess_times, y_preprocess_indices, color='w', zorder=2, label='prepcess')
-ax.scatter(x_preprocess_search_times, y_preprocess_search_indices, color='y', zorder=2, label='prepcess_search')
+ax.plot(x_new_file_times, y_new_file_indices, zorder=2, label='new files')
+ax.scatter(x_send_times, y_send_indices, marker='x', zorder=2, label='upload')
+ax.scatter(x_preprocess_times, y_preprocess_indices, marker='o', zorder=2, label='process (prio)')
+ax.scatter(x_preprocess_search_times, y_preprocess_search_indices, marker='v', zorder=2, label='process (search)')
+
+
+ax2.set_ylabel('Document Index')
+ax.set_xlabel('Timestamp (seconds)')
+ax2.set_xticks([])
+
 ax.legend()
+
+
 
 plt.show()
 fig.savefig(f'figures/{stream_id}.0.overall.png')
 
 # ---
+
+
 
 capacity = QUIT_AFTER
 index = np.arange(0, capacity)
@@ -151,26 +178,26 @@ def fit_spline(known_scores):
 plt.clf()
 plt.figure(figsize=(7, 3.5), dpi=500)
 
-quit()
+# quit()
 
 if True:
     X2 = np.arange(0, capacity, 1)
     Y2 = golden_compressibility
-    plt.plot(X2, Y2, color=(1, 0, 0, 0.5))
+    # plt.plot(X2, Y2, color=(1, 0, 0, 0.5))
 
     for i, scores in enumerate(spline_scores[::5]):
         f, min, max = fit_spline(scores)
         if f is not None:
             num_steps = int((max - min) / capacity * 1000)
             X = np.linspace(min, max, num_steps, endpoint=True)
-            plt.plot(X, f(X), color=(0, 0.1, 1, 0.2 + (i / capacity)**5 * 0.3))
+            # plt.plot(X, f(X), color=(0, 0.1, 1, 0.2 + (i / capacity)**5 * 0.3),)
     if True:
         scores = spline_scores[-1]
         f, min, max = fit_spline(scores)
         if f is not None:
             num_steps = int((max - min) / capacity * 1000)
             X = np.linspace(min, max, num_steps, endpoint=True)
-            plt.plot(X, f(X), color=(0, 1, 0))
+            plt.plot(X, f(X))#, color=(0, 1, 0))
 
 
 X_files_that_were_preprocessed = []
@@ -179,12 +206,12 @@ Y_files_that_were_preprocessed = []
 for spline_state in spline_states:
     for i in range(len(spline_state)):
         state = spline_state[i]
-        if state == 2 or state == 3:
+        if state == STATE_PRE_PROCESSING or state == STATE_IN_QUEUE_PRE_PROCESSED:
             if i not in X_files_that_were_preprocessed:
                 X_files_that_were_preprocessed.append(i)
                 Y_files_that_were_preprocessed.append(golden_compressibility[i])
 
-plt.scatter(X_files_that_were_preprocessed, Y_files_that_were_preprocessed)
+plt.scatter(X_files_that_were_preprocessed, Y_files_that_were_preprocessed, marker='o',alpha=0.7, label='processed')
 
 X_files_that_were_not_preprocessed = []
 Y_files_that_were_not_preprocessed = []
@@ -194,7 +221,13 @@ for i in range(len(spline_states[0])):
         X_files_that_were_not_preprocessed.append(i)
         Y_files_that_were_not_preprocessed.append(golden_compressibility[i])
 
-plt.scatter(X_files_that_were_not_preprocessed, Y_files_that_were_not_preprocessed)
 
+ax = plt.gca()
+ax.yaxis.grid(alpha=0.3) # horizontal lines
+plt.scatter(X_files_that_were_not_preprocessed, Y_files_that_were_not_preprocessed, marker='x',alpha=0.7, label='unprocessed')
+plt.legend()
+plt.ylabel('ΔBytes/Time Taken (bytes/secs)')
+plt.xlabel('Image Index')
+plt.tight_layout()
 
 plt.savefig(f'figures/{stream_id}.1.splines-blended.png')

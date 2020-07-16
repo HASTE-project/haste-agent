@@ -11,16 +11,17 @@ CONFIGS = [
     (0, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/', haste.desktop_agent.config.MODE_NATURAL),
 
     (1, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/', haste.desktop_agent.config.MODE_SPLINES),
-    (1, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/', haste.desktop_agent.config.MODE_NATURAL),
-    (1, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/', haste.desktop_agent.config.MODE_GOLDEN),
+    # (1, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/', haste.desktop_agent.config.MODE_GOLDEN),
 
     (2, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/', haste.desktop_agent.config.MODE_SPLINES),
+    (3, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/', haste.desktop_agent.config.MODE_SPLINES),
+
+    (1, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/', haste.desktop_agent.config.MODE_NATURAL),
     (2, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/', haste.desktop_agent.config.MODE_NATURAL),
-    (2, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/', haste.desktop_agent.config.MODE_GOLDEN),
+    # (2, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/', haste.desktop_agent.config.MODE_GOLDEN),
 
     # Don't use more than 3 threads, there are only 2 cores.
-    # (3, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/', haste.desktop_agent.config.MODE_SPLINES),
-    # (3, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/', haste.desktop_agent.config.MODE_NATURAL),
+    (3, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/', haste.desktop_agent.config.MODE_NATURAL),
     # (3, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/', haste.desktop_agent.config.MODE_GOLDEN),
 
     (0, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/ffill/', haste.desktop_agent.config.MODE_NATURAL),
