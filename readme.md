@@ -1,5 +1,22 @@
-Desktop client which watches a directory and streams new/modified files to HASTE.
+Desktop client which watches a directory and streams new/modified files to HASTE. Intended for use with the HASTE Cloud Gateway (https://github.com/HASTE-project/haste-gateway)
+Part of the HASTE Toolkit for intelligent stream-processing of life science datasets.
 
+The tool demonstrates a novel approach for smart prioritization of processing tasks for computation at the cloud edge.
+Processing is prioritized locally (at the edge) where it is predicted to yield the greatest reduction in message size, with other work left for the cloud.
+This yields a mimimum stream-processing makespan in cases where overall throughput is bound by upload bandwidth. 
+
+This tool is used in use-cases in microscopy applications, discussed in the following publications:
+```
+"Rapid development of cloud-native intelligent data pipelines for scientific data streams using the HASTE Toolkit"
+https://www.biorxiv.org/content/10.1101/2020.09.13.274779v1
+```
+
+```
+Resource- and Message Size-Aware Scheduling of Stream Processing at the Edge with application to Realtime Microscopy
+https://arxiv.org/abs/1912.09088
+```
+
+# Command Line Arguments
 
 ```
 usage: python3 -u -m haste.desktop-agent [-h] [--include [INCLUDE]]
@@ -20,9 +37,9 @@ optional arguments:
                         laptop)
   --host [HOST]         Hostname for HASTE e.g. foo.haste.com:80
   --username [USERNAME]
-                        Username for HASTE
+                        Username for HASTE Cloud Gateway
   --password [PASSWORD]
-                        Password for HASTE
+                        Password for HASTE Cloud Gateway
 
 ```
 
