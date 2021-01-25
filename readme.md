@@ -1,3 +1,5 @@
+# HASTE Desktop Agent
+
 Desktop client which watches a directory and streams new/modified files to HASTE. Intended for use with the HASTE Cloud Gateway (https://github.com/HASTE-project/haste-gateway)
 Part of the HASTE Toolkit for intelligent stream-processing of life science datasets.
 
@@ -16,7 +18,7 @@ Resource- and Message Size-Aware Scheduling of Stream Processing at the Edge wit
 https://arxiv.org/abs/1912.09088
 ```
 
-# Command Line Arguments
+## Command Line Arguments
 
 ```
 usage: python3 -u -m haste.desktop-agent [-h] [--include [INCLUDE]]
