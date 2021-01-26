@@ -53,7 +53,7 @@ optional arguments:
 
 0. Clone this repository.
 0. Deploy the HASTE Gateway according to (the instructions)[https://github.com/HASTE-project/haste-gateway] in that repository. Note the credentials.
-1. Download the dataset.'
+1. Download and extract the the dataset from: https://doi.org/10.17044/scilifelab.12771614.v1
 2. Modify ./haste/desktop_agent/config.py so that the source dir points to the directory containing the source images, and that the target dir maps to an empty directory.
 3. Install the HASTE agent:
 ```
