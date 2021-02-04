@@ -36,9 +36,9 @@ stats_total_preproc_duration = 0
 path, dot_and_extension, stream_id_tag, username, password, host, stream_id, x_preprocessing_cores, x_mode = initialize()
 assert path.endswith('/')
 
-ground_truth = golden.csv_results[0:QUIT_AFTER]
-golden_estimated_scores = (ground_truth['input_file_size_bytes'] - ground_truth[
-    'output_file_size_bytes']) / ground_truth['duration_total']
+# ground_truth = golden.csv_results[0:QUIT_AFTER]
+golden_estimated_scores = None#(ground_truth['input_file_size_bytes'] - ground_truth[
+#     'output_file_size_bytes']) / ground_truth['duration_total']
 
 master_queue = MasterQueue(QUIT_AFTER, x_mode, golden_estimated_scores)
 

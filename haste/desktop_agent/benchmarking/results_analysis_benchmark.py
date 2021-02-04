@@ -53,6 +53,8 @@ data = {
 df = pd.DataFrame(data,
                   columns=['count_preproc_threads', 'mode', 'source_dir', 'time_taken', 'bytes_sent'])
 
+# We don't use 3 threads, there are only 2 cores.
+
 plt.clf()
 boxes = [
     df['time_taken'][
@@ -64,8 +66,8 @@ boxes = [
         (df['count_preproc_threads'] == 1) & (df['mode'] == MODE_SPLINES) & (df['source_dir'] == 'greyscale')].values,
     df['time_taken'][
         (df['count_preproc_threads'] == 2) & (df['mode'] == MODE_SPLINES) & (df['source_dir'] == 'greyscale')].values,
-    df['time_taken'][
-        (df['count_preproc_threads'] == 3) & (df['mode'] == MODE_SPLINES) & (df['source_dir'] == 'greyscale')].values,
+    # df['time_taken'][
+    #     (df['count_preproc_threads'] == 3) & (df['mode'] == MODE_SPLINES) & (df['source_dir'] == 'greyscale')].values,
 
     df['time_taken'][
         (df['count_preproc_threads'] == 1) & (df['mode'] == MODE_NATURAL) & (df['source_dir'] == 'greyscale')].values,
@@ -75,8 +77,8 @@ boxes = [
 
     # df['time_taken'][
     #     (df['count_preproc_threads'] == 2) & (df['mode'] == MODE_GOLDEN) & (df['source_dir'] == 'greyscale')].values,
-    df['time_taken'][
-        (df['count_preproc_threads'] == 3) & (df['mode'] == MODE_NATURAL) & (df['source_dir'] == 'greyscale')].values,
+    # df['time_taken'][
+    #     (df['count_preproc_threads'] == 3) & (df['mode'] == MODE_NATURAL) & (df['source_dir'] == 'greyscale')].values,
 
     # df['time_taken'][(df['count_preproc_threads'] == 3) & (df['mode'] == MODE_GOLDEN) & (df['source_dir'] == 'greyscale')],
     # df['time_taken'][(df['count_preproc_threads'] == 3) & (df['mode'] == MODE_SPLINES) & (df['source_dir'] == 'greyscale')],
@@ -92,7 +94,7 @@ plt.boxplot(boxes,
                 # 'g,1,g',
                 '1,s',
                 '2,s',
-                '3,s',
+                # '3,s',
 
                 '1,r',
 
@@ -101,7 +103,7 @@ plt.boxplot(boxes,
 
                 # 'g,3,g',
                 # '3,s',
-                '3,r',
+                # '3,r',
 
                 'ffill,0',
             ], whis='range')

@@ -6,7 +6,7 @@
 import os
 
 # Base working directory:
-BASE_DIR = os.path.expanduser('~/haste_agent_benchmarking_images')
+_BASE_DIR = os.path.expanduser('~/haste_agent_benchmarking_images')
 #_BASE_DIR = '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen'
 
 ORIGINAL_DIR = f'{_BASE_DIR}/orig/'
@@ -29,3 +29,8 @@ FREQUENCY = 20  # looking at the filenames, 2019_02_04__11_34_55_vironova looks 
 
 EXTENSION = '.png'
 QUIT_AFTER = 759
+
+
+HASTE_GATEWAY_PASSWORD = '???'
+HASTE_GATEWAY_USERNAME = '???'
+HASTE_GATEWAY_HOST = 'haste-gateway.benblamey.com:80'

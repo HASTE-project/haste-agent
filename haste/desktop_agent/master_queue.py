@@ -30,8 +30,8 @@ class MasterQueue:
         self.index = np.arange(0, capacity)
         self.index.flags['WRITEABLE'] = False
         self.mode = mode
-        self.golden_estimated_scores = golden_estimated_scores
-        self.golden_estimated_scores.flags['WRITEABLE'] = False
+        # self.golden_estimated_scores = golden_estimated_scores
+        # self.golden_estimated_scores.flags['WRITEABLE'] = False
 
         logging.info(f'Mode is {["SPLINES", "NATURAL", "GOLDEN"][mode]}')
 

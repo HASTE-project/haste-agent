@@ -51,6 +51,13 @@ optional arguments:
 
 # To Reproduce the Paper Results
 
+
+0. Note on upload bandwidth limiting.
+Note that the results will depend on the performance of the machine, and the upload rate, the upload bandwidth needs to be limited if you are attempting to reproduce the results. 
+There are a number of utilities to do this, such as: https://apple.stackexchange.com/questions/112329/limit-my-upload-speed-at-os-level
+Alternatively, one can enable the 'fake uploads' configuration option, which simulates a limited upload speed (set `FAKE_UPLOAD`to `True` in `config.py`)
+
+
 0. Clone this repository.
 ```
 git clone git@github.com:HASTE-project/haste-agent.git
@@ -86,6 +93,8 @@ curl -L https://scilifelab.figshare.com/ndownloader/files/24165845 | tar -xz
 5. Modify the configuration so that the paths are consistent with the above: 
 ./haste/desktop_agent/benchmarking/benchmarking_config.py
 
+Remember to update the `HASTE_GATEWAY_*` host/credentials settings to match the gateway.
+
 6. Run the dataset preparation:
 ```
 python3 -m haste.desktop_agent.benchmarking.prep
@@ -99,21 +108,21 @@ python3 -m haste.desktop_agent.benchmarking
 ```
 
 This will generate a set of log files for the multiple runs for their different configurations in the `./haste/desktop_agent/benchmarking/logs` folder. 
-Create a new subdirectory and move this collection of log files, so they are kept together.
+It will try to run forever generating more data for an average makespan. 40 iterations will be 5 runs for each configuration, enough for a reasonable average.
+Create a new subdirectory (e.g. `run0`) and move this collection of log files, so they are kept together.
+If you run the benchmarking harness multiple times, clear out any old log files. 
 
-We only need the makespan to generate the boxplots. We use grep to find the lines of log data we need.
+We only need the makespan to generate the boxplots. We use grep to find the lines of log data we need, this file is read by the next Python script.
 ```
 cd ./haste/desktop_agent/benchmarking/logs/run0
 grep Queue_is_empty *.log > grepped.txt
 ``` 
 
 8. Now, the script `results_analysis_benchmark.py` can be used to generate the plots seen in the paper. Set the variable `run` as above.
+Figures will be generated in the `./haste/desktop_agent/benchmarking/figures` directory. The 'time_taken' plot will visualize the makespans as a boxplot, as shown in the paper.
+`results_analysis_single_run_splines.py` can be used for a more detailed visualization  
 
 
-Note that the results will depend on the performance of the machine, and the upload rate, the upload bandwidth needs to be limited if you are attempting to reproduce the results. 
-There are a number of utilities to do this, such as: https://apple.stackexchange.com/questions/112329/limit-my-upload-speed-at-os-level
-
-Alternatively, one can enable the 'fake uploads' configuration option, which simulates a limited upload speed.
 
 # Contact
 

@@ -6,6 +6,9 @@ import haste.desktop_agent.config
 import sys
 
 # num_preproc_core, source_dir, enable_prio_by_splines
+from haste.desktop_agent.benchmarking.benchmarking_config import HASTE_GATEWAY_PASSWORD, HASTE_GATEWAY_USERNAME, \
+    HASTE_GATEWAY_HOST
+
 CONFIGS = [
     (0, benchmarking_config.GREYSCALE_DIR, haste.desktop_agent.config.MODE_NATURAL),
 
@@ -13,14 +16,14 @@ CONFIGS = [
     # (1, benchmarking_config.GREYSCALE_DIR, haste.desktop_agent.config.MODE_GOLDEN),
 
     (2, benchmarking_config.GREYSCALE_DIR, haste.desktop_agent.config.MODE_SPLINES),
-    (3, benchmarking_config.GREYSCALE_DIR, haste.desktop_agent.config.MODE_SPLINES),
+    # (3, benchmarking_config.GREYSCALE_DIR, haste.desktop_agent.config.MODE_SPLINES),
 
     (1, benchmarking_config.GREYSCALE_DIR, haste.desktop_agent.config.MODE_NATURAL),
     (2, benchmarking_config.GREYSCALE_DIR, haste.desktop_agent.config.MODE_NATURAL),
     # (2, benchmarking_config.GREYSCALE_DIR, haste.desktop_agent.config.MODE_GOLDEN),
 
     # Don't use more than 3 threads, there are only 2 cores.
-    (3, benchmarking_config.GREYSCALE_DIR, haste.desktop_agent.config.MODE_NATURAL),
+    # (3, benchmarking_config.GREYSCALE_DIR, haste.desktop_agent.config.MODE_NATURAL),
     # (3, benchmarking_config.GREYSCALE_DIR, haste.desktop_agent.config.MODE_GOLDEN),
 
     #
@@ -54,9 +57,9 @@ async def main():
                    '-m', 'haste.desktop_agent',
                    '--include', haste.desktop_agent.benchmarking.benchmarking_config.EXTENSION,
                    '--tag', 'trash',
-                   '--host', 'haste-gateway.benblamey.com:80',
-                   '--username', 'haste',
-                   '--password', 'mr_frumbles_bad_day',
+                   '--host', HASTE_GATEWAY_HOST,
+                   '--username', HASTE_GATEWAY_USERNAME,
+                   '--password', HASTE_GATEWAY_PASSWORD,
                    haste.desktop_agent.benchmarking.benchmarking_config.TARGET_DIR,
                    '--x-preprocessing-cores', str(num_threads),
                    '--x-mode', str(mode)]
