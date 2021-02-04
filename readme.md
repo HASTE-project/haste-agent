@@ -51,23 +51,78 @@ optional arguments:
 
 # To Reproduce the Paper Results
 
+
+0. Note on upload bandwidth limiting.
+Note that the results will depend on the performance of the machine, and the upload rate, the upload bandwidth needs to be limited if you are attempting to reproduce the results. 
+There are a number of utilities to do this, such as: https://apple.stackexchange.com/questions/112329/limit-my-upload-speed-at-os-level
+Alternatively, one can enable the 'fake uploads' configuration option, which simulates a limited upload speed (set `FAKE_UPLOAD`to `True` in `config.py`)
+
+
 0. Clone this repository.
-0. Deploy the HASTE Gateway according to (the instructions)[https://github.com/HASTE-project/haste-gateway] in that repository. Note the credentials.
-1. Download and extract the the dataset from: https://doi.org/10.17044/scilifelab.12771614.v1
-2. Modify ./haste/desktop_agent/config.py so that the source dir points to the directory containing the source images, and that the target dir maps to an empty directory.
-3. Install the HASTE agent:
+```
+git clone git@github.com:HASTE-project/haste-agent.git
+```
+
+1. Chekout the version presented in the paper:
+```
+git checkout 0.1
+```
+
+2. Install the HASTE agent:
 ```
 python3 -m pip install -e .
 ```
-4. Run the benchmarking harness (this will repeat the experiment using the various algorithms for prioritizing client-side processing):
+
+3. Deploy the HASTE Gateway according to [the instructions](https://github.com/HASTE-project/haste-gateway) in that repository. Note the credentials.
+
+4. The dataset requires some preparation to reproduce the results in the paper. There are two issues: (a) the published dataset is the original images from the miniTEM, these are greyscale images encoded as 3-channel color images. For the experiment, we use the same images, but correctly encoded as greyscale. (b) one of the cases in the benchmarking run is a baseline where all images are pre-processed with the flood-fill algorithm offline, this offline step needs to be run.
+
+```
+# Create a working directory tree, with sub-directories.
+mkdir ~/haste_agent_benchmarking_images
+mkdir ~/haste_agent_benchmarking_images/orig
+mkdir ~/haste_agent_benchmarking_images/greyscale
+mkdir ~/haste_agent_benchmarking_images/ffill
+mkdir ~/haste_agent_benchmarking_images/target
+
+# Download and unzip v1 of the image set into the 'orig' directory:
+cd ~/haste_agent_benchmarking_images/orig
+curl -L https://scilifelab.figshare.com/ndownloader/files/24165845 | tar -xz
+```
+
+5. Modify the configuration so that the paths are consistent with the above: 
+./haste/desktop_agent/benchmarking/benchmarking_config.py
+
+Remember to update the `HASTE_GATEWAY_*` host/credentials settings to match the gateway.
+
+6. Run the dataset preparation:
+```
+python3 -m haste.desktop_agent.benchmarking.prep
+```
+
+This should populate the 'greyscale' and 'ffill' directories with the derived imagesets. 'target' remains empty for now.
+
+7. Run the benchmarking harness (this will repeat the experiment using the various algorithms for prioritizing client-side processing):
 ```
 python3 -m haste.desktop_agent.benchmarking
 ```
-5. Afterwards, the script `results_analysis_benchmark.py` can be used to generate the plots seen in the paper!
+
+This will generate a set of log files for the multiple runs for their different configurations in the `./haste/desktop_agent/benchmarking/logs` folder. 
+It will try to run forever generating more data for an average makespan. 40 iterations will be 5 runs for each configuration, enough for a reasonable average.
+Create a new subdirectory (e.g. `run0`) and move this collection of log files, so they are kept together.
+If you run the benchmarking harness multiple times, clear out any old log files. 
+
+We only need the makespan to generate the boxplots. We use grep to find the lines of log data we need.
+```
+cd ./haste/desktop_agent/benchmarking/logs/run0
+grep Queue_is_empty *.log > grepped.txt
+``` 
+
+8. Now, the script `results_analysis_benchmark.py` can be used to generate the plots seen in the paper. Set the variable `run` as above.
+Figures will be generated in the `./haste/desktop_agent/benchmarking/figures` directory. The 'time_taken' plot will visualize the makespans as a boxplot, as shown in the paper.
+`results_analysis_single_run_splines.py` can be used for a more detailed visualization  
 
 
-Note that the results will depend on the performance of the machine, and the upload rate, the upload bandwidth needs to be limited if you are attempting to reproduce the results. 
-There are a number of utilities to do this, such as: https://apple.stackexchange.com/questions/112329/limit-my-upload-speed-at-os-level
 
 # Contact
 
