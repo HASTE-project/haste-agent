@@ -6,9 +6,12 @@ import ben_images.flood_fill
 from PIL import Image
 import numpy as np
 import time
-from sys import stdin
+from haste.desktop_agent.flood_fill_preprocessor.flood_fill import convert_file
 
 from haste.desktop_agent.config import LOGGING_FORMAT_DATE, LOGGING_FORMAT_AGENT
+
+# NOTE: This code is run as a configured external command from the HASTE Agent, filenames for conversion are piped to STDIN.
+
 
 
 def convert_file(input_filepath, output_filepath):

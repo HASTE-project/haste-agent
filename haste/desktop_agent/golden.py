@@ -2,18 +2,24 @@ import time
 
 import pandas as pd
 
-csv_results = pd.read_csv(
-    # '/Users/benblamey/projects/haste/vironova-image-compression/results/scanlines-viron_2019_02_04__11_34_55.csv',
-    '/Users/benblamey/projects/haste/vironova-image-compression/results/thres-viron_2019_02_04__11_34_55.csv',
-    header=None,
-    names=[
-        'filename',
-        'dur_load_image_to_np',
-        'dur_flood_fill',
-        'duration_total',
-        'input_file_size_bytes',
-        'output_file_size_bytes',
-    ])
+# Used for the 'golden' baseline mode, not used in the paper in the end. deprecated.
+csv_results = None
+
+# csv_results = pd.read_csv(
+#     #'/Users/benblamey/projects/haste/vironova-image-compression/results/scanlines-viron_2019_02_04__11_34_55.csv',
+#     #'/Users/benblamey/projects/haste/vironova-image-compression/results/thres-viron_2019_02_04__11_34_55.csv',
+#     # '/Users/benblamey/projects/haste/vironova-image-compression/results/dark-np.csv',
+#     '/Users/benblamey/projects/haste/vironova-image-compression/results/old--viron_2019_02_04__11_34_55.csv',
+#     header=None,
+#     names=[
+#         'filename',
+#         'dur_load_image_to_np',
+#         'dur_flood_fill',
+#         'duration_total',
+#         'input_file_size_bytes',
+#         'output_file_size_bytes',
+#     ],
+#     skiprows=1)
 
 
 def get_golden_prio_for_filename(filename):

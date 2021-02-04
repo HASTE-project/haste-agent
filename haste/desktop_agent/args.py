@@ -4,7 +4,8 @@ import logging
 import os
 import sys
 
-from haste.desktop_agent.config import LOGGING_FORMAT_AGENT, LOGGING_FORMAT_DATE, FREQUENCY
+from haste.desktop_agent.config import LOGGING_FORMAT_AGENT, LOGGING_FORMAT_DATE
+from haste.desktop_agent.benchmarking.benchmarking_config import FREQUENCY
 
 
 def parse_args():

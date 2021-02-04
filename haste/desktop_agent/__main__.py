@@ -12,11 +12,11 @@ from haste.desktop_agent.master_queue import MasterQueue
 from watchdog.observers import Observer
 import asyncio
 import logging
-import vironova_image_compression.ben_images.file_utils
 from haste.desktop_agent.FSEvents import HasteFSEventHandler
 from haste.desktop_agent.args import initialize
-from haste.desktop_agent.config import MAX_CONCURRENT_XFERS, QUIT_AFTER, DELETE, FAKE_UPLOAD, \
-    FAKE_UPLOAD_SPEED_BITS_PER_SECOND
+from haste.desktop_agent.config import MAX_CONCURRENT_XFERS, FAKE_UPLOAD, \
+    FAKE_UPLOAD_SPEED_BITS_PER_SECOND, PREPROCESSOR_CMD, DELETE_FILE_AFTER_SENDING
+from haste.desktop_agent.benchmarking.benchmarking_config import QUIT_AFTER
 from haste.desktop_agent.post_file import send_file
 
 # TODO: store timestamps also and clear the old ones
@@ -45,6 +45,9 @@ master_queue = MasterQueue(QUIT_AFTER, x_mode, golden_estimated_scores)
 time_last_full_dir_listing = -1
 TOO_LONG = 0.005
 
+def get_file_size(filepath):
+    st = os.stat(filepath)
+    return st.st_size
 
 def thread_worker_poll_fs():
     global time_last_full_dir_listing
@@ -109,7 +112,7 @@ def put_event_on_queue(event):
         event.golden_bytes_reduction = get_golden_prio_for_filename(src_path.split('/')[-1])
 
     event.preprocessed = False
-    event.file_size = vironova_image_compression.ben_images.file_utils.get_file_size(event.src_path)
+    event.file_size = get_file_size(event.src_path)
 
     # Queue never full, has infinite capacity.
     events_to_process_mt_queue.put(event, block=True)
@@ -185,7 +188,7 @@ async def preprocess_async_loop_new_proc(name, queue):
                 file_system_event2.timestamp = time.time()
                 file_system_event2.src_path = output_filepath
 
-                file_system_event2.file_size = vironova_image_compression.ben_images.file_utils.get_file_size(output_filepath)
+                file_system_event2.file_size = get_file_size(output_filepath)
 
                 file_system_event2.golden_bytes_reduction = (
                                                                     file_system_event.file_size - file_system_event2.file_size) / dur_preproc
@@ -200,7 +203,7 @@ async def preprocess_async_loop_new_proc(name, queue):
                 count += 1
                 logging.info(f'preprocessed {count} files')
 
-                if DELETE:
+                if DELETE_FILE_AFTER_SENDING:
                     os.unlink(file_system_event.src_path)
 
             else:
@@ -224,7 +227,7 @@ async def preprocess_async_loop_service(name, queue):
     count = 0
     try:
         proc = await asyncio.create_subprocess_shell(
-            'python3 -m haste.desktop_agent.preprocessor',
+            PREPROCESSOR_CMD,
             stdout=asyncio.subprocess.PIPE,
             stdin=asyncio.subprocess.PIPE)
 
@@ -270,7 +273,7 @@ async def preprocess_async_loop_service(name, queue):
                 count += 1
                 logging.info(f'preprocessed {count} files')
 
-                if DELETE:
+                if DELETE_FILE_AFTER_SENDING:
                     os.unlink(file_system_event.src_path)
 
             else:
@@ -373,7 +376,7 @@ async def worker_send_files(name, queue):
 
             last = time.time()
 
-            if DELETE:
+            if DELETE_FILE_AFTER_SENDING:
                 start_delete = time.time()
                 if False:
                     # this takes ~0.005...at ~10Hz this is too slow?

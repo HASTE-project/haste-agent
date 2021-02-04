@@ -1,29 +1,30 @@
 import asyncio
-import time
-import os
-import shutil
 import logging
+
+import haste.desktop_agent.benchmarking.benchmarking_config as benchmarking_config
 import haste.desktop_agent.config
 import sys
 
 # num_preproc_core, source_dir, enable_prio_by_splines
 CONFIGS = [
-    (0, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/', haste.desktop_agent.config.MODE_NATURAL),
+    (0, benchmarking_config.GREYSCALE_DIR, haste.desktop_agent.config.MODE_NATURAL),
 
-    (1, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/', haste.desktop_agent.config.MODE_SPLINES),
-    (1, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/', haste.desktop_agent.config.MODE_NATURAL),
-    (1, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/', haste.desktop_agent.config.MODE_GOLDEN),
+    (1, benchmarking_config.GREYSCALE_DIR, haste.desktop_agent.config.MODE_SPLINES),
+    # (1, benchmarking_config.GREYSCALE_DIR, haste.desktop_agent.config.MODE_GOLDEN),
 
-    (2, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/', haste.desktop_agent.config.MODE_SPLINES),
-    (2, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/', haste.desktop_agent.config.MODE_NATURAL),
-    (2, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/', haste.desktop_agent.config.MODE_GOLDEN),
+    (2, benchmarking_config.GREYSCALE_DIR, haste.desktop_agent.config.MODE_SPLINES),
+    (3, benchmarking_config.GREYSCALE_DIR, haste.desktop_agent.config.MODE_SPLINES),
+
+    (1, benchmarking_config.GREYSCALE_DIR, haste.desktop_agent.config.MODE_NATURAL),
+    (2, benchmarking_config.GREYSCALE_DIR, haste.desktop_agent.config.MODE_NATURAL),
+    # (2, benchmarking_config.GREYSCALE_DIR, haste.desktop_agent.config.MODE_GOLDEN),
 
     # Don't use more than 3 threads, there are only 2 cores.
-    # (3, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/', haste.desktop_agent.config.MODE_SPLINES),
-    # (3, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/', haste.desktop_agent.config.MODE_NATURAL),
-    # (3, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/', haste.desktop_agent.config.MODE_GOLDEN),
+    (3, benchmarking_config.GREYSCALE_DIR, haste.desktop_agent.config.MODE_NATURAL),
+    # (3, benchmarking_config.GREYSCALE_DIR, haste.desktop_agent.config.MODE_GOLDEN),
 
-    (0, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/ffill/', haste.desktop_agent.config.MODE_NATURAL),
+    #
+    (0, benchmarking_config.FFILL_DIR, haste.desktop_agent.config.MODE_NATURAL),
 ]
 
 
@@ -35,14 +36,14 @@ async def main():
                         format=LOGGING_FORMAT,
                         datefmt=LOGGING_FORMAT_DATE)
 
-    i = -1
+    run_index = -1
     # while time.time() < 1553760000:  # 03/28/2019 @ 8:00am (UTC)
     while True:
-        i += 1
-        for j, c in enumerate(CONFIGS):
-            logging.info(f'Starting Benchmarking Run {i}.{j}')
+        run_index += 1
+        for config_index, config in enumerate(CONFIGS):
+            logging.info(f'Starting Benchmarking Run {run_index}.{config_index}')
 
-            num_threads, source_dir, mode = c
+            num_threads, source_dir, mode = config
 
             proc_simulator = await asyncio.create_subprocess_exec(
                 sys.executable, '-m', 'haste.desktop_agent.simulator', source_dir)
@@ -51,12 +52,12 @@ async def main():
 
             cmd = [sys.executable,
                    '-m', 'haste.desktop_agent',
-                   '--include', haste.desktop_agent.config.EXTENSION,
+                   '--include', haste.desktop_agent.benchmarking.benchmarking_config.EXTENSION,
                    '--tag', 'trash',
                    '--host', 'haste-gateway.benblamey.com:80',
                    '--username', 'haste',
                    '--password', 'mr_frumbles_bad_day',
-                   haste.desktop_agent.config.TARGET_DIR,
+                   haste.desktop_agent.benchmarking.benchmarking_config.TARGET_DIR,
                    '--x-preprocessing-cores', str(num_threads),
                    '--x-mode', str(mode)]
             # if not c[2]:
@@ -68,7 +69,7 @@ async def main():
             await proc_simulator.wait()
             await proc_agent.wait()
 
-            logging.info(f'Finished Benchmarking Run {i}.{j}')
+            logging.info(f'Finished Benchmarking Run {run_index}.{config_index}')
 
             await asyncio.sleep(3)
 

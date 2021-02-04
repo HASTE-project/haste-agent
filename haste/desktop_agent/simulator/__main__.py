@@ -4,8 +4,11 @@ import os
 import shutil
 import logging
 
+import haste.desktop_agent.benchmarking.benchmarking_config
 from haste.desktop_agent import config
-from haste.desktop_agent.config import EXTENSION, TARGET_DIR, FREQUENCY
+from haste.desktop_agent.benchmarking.benchmarking_config import TARGET_DIR, EXTENSION, FREQUENCY
+
+# Basic microscope simulator. Copies files from one dir to another at a specified frequency to simulate image capture.
 
 if __name__ == '__main__':
     SOURCE_DIR = sys.argv[1]
@@ -29,9 +32,9 @@ if __name__ == '__main__':
     filenames = filter(lambda filename: filename.endswith(EXTENSION), filenames)
 
     filenames = list(sorted(filenames))
-    filenames = filenames[:config.QUIT_AFTER]
+    filenames = filenames[:haste.desktop_agent.benchmarking.benchmarking_config.QUIT_AFTER]
 
-    assert len(filenames) == config.QUIT_AFTER
+    assert len(filenames) == haste.desktop_agent.benchmarking.benchmarking_config.QUIT_AFTER
 
     logging.info(f'about to stream {len(filenames)} files.')
 

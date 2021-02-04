@@ -3,9 +3,14 @@ import pandas as pd
 from haste.desktop_agent.benchmarking.__main__ import CONFIGS
 import matplotlib.pyplot as plt
 
-from haste.desktop_agent.config import MODE_NATURAL, MODE_GOLDEN, MODE_SPLINES
+MODE_SPLINES = 0
+MODE_NATURAL = 1
+MODE_GOLDEN = 2
 
-RUN = '2019_05_08-01'
+
+# RUN = '2019_05_08-01'
+# RUN = '11_fri_am'
+RUN = 'foo'
 
 # grep Queue_is_empty *.log > grepped.txt
 
@@ -53,19 +58,25 @@ boxes = [
     df['time_taken'][
         (df['count_preproc_threads'] == 0) & (df['mode'] == MODE_NATURAL) & (df['source_dir'] == 'greyscale')].values,
 
-    df['time_taken'][
-        (df['count_preproc_threads'] == 1) & (df['mode'] == MODE_GOLDEN) & (df['source_dir'] == 'greyscale')].values,
+    # df['time_taken'][
+    #     (df['count_preproc_threads'] == 1) & (df['mode'] == MODE_GOLDEN) & (df['source_dir'] == 'greyscale')].values,
     df['time_taken'][
         (df['count_preproc_threads'] == 1) & (df['mode'] == MODE_SPLINES) & (df['source_dir'] == 'greyscale')].values,
+    df['time_taken'][
+        (df['count_preproc_threads'] == 2) & (df['mode'] == MODE_SPLINES) & (df['source_dir'] == 'greyscale')].values,
+    df['time_taken'][
+        (df['count_preproc_threads'] == 3) & (df['mode'] == MODE_SPLINES) & (df['source_dir'] == 'greyscale')].values,
+
     df['time_taken'][
         (df['count_preproc_threads'] == 1) & (df['mode'] == MODE_NATURAL) & (df['source_dir'] == 'greyscale')].values,
 
     df['time_taken'][
-        (df['count_preproc_threads'] == 2) & (df['mode'] == MODE_GOLDEN) & (df['source_dir'] == 'greyscale')].values,
-    df['time_taken'][
-        (df['count_preproc_threads'] == 2) & (df['mode'] == MODE_SPLINES) & (df['source_dir'] == 'greyscale')].values,
-    df['time_taken'][
         (df['count_preproc_threads'] == 2) & (df['mode'] == MODE_NATURAL) & (df['source_dir'] == 'greyscale')].values,
+
+    # df['time_taken'][
+    #     (df['count_preproc_threads'] == 2) & (df['mode'] == MODE_GOLDEN) & (df['source_dir'] == 'greyscale')].values,
+    df['time_taken'][
+        (df['count_preproc_threads'] == 3) & (df['mode'] == MODE_NATURAL) & (df['source_dir'] == 'greyscale')].values,
 
     # df['time_taken'][(df['count_preproc_threads'] == 3) & (df['mode'] == MODE_GOLDEN) & (df['source_dir'] == 'greyscale')],
     # df['time_taken'][(df['count_preproc_threads'] == 3) & (df['mode'] == MODE_SPLINES) & (df['source_dir'] == 'greyscale')],
@@ -76,22 +87,34 @@ boxes = [
 
 plt.boxplot(boxes,
             labels=[
-        'g,0,n',
+                '0,n',
 
-        'g,1,g',
-        'g,1,s',
-        'g,1,n',
+                # 'g,1,g',
+                '1,s',
+                '2,s',
+                '3,s',
 
-        'g,2,g',
-        'g,2,s',
-        'g,2,n',
+                '1,r',
 
-        # 'g,3,g',
-        # 'g,3,s',
-        # 'g,3,n',
+                # 'g,2,g',
+                '2,r',
 
-        'ffill,0',
-    ], whis='range')
+                # 'g,3,g',
+                # '3,s',
+                '3,r',
+
+                'ffill,0',
+            ], whis='range')
+
+
+# for cons with oliver
+ax = plt.axes()
+ax.yaxis.grid(alpha=0.3) # horizontal lines
+
+plt.ylabel('End-to-end latency (seconds)')
+plt.xlabel('Configuration')
+
+
 
 plt.savefig(f'figures/{RUN}.0.boxwhisker.time_taken.png')
 
@@ -160,7 +183,7 @@ plt.boxplot([
     df['bytes_sent'][(df['count_preproc_threads'] == 3) & (df['mode'] == False) & (df['source_dir'] == 'greyscale')]/df['time_taken'][(df['count_preproc_threads'] == 3) & (df['mode'] == False) & (df['source_dir'] == 'greyscale')],
 
     df['bytes_sent'][(df['count_preproc_threads'] == 0) & (df['source_dir'] == 'ffill')]/df['time_taken'][(df['count_preproc_threads'] == 0) & (df['source_dir'] == 'ffill')],
-],
+    ],
     labels=[
         'g,0,r',
 
@@ -176,6 +199,10 @@ plt.boxplot([
     ],
     whis='range'
 )
+
+
+
+
 plt.savefig(f'figures/{RUN}.0.boxwhisker.mean_upload_speed.png')
 
 plt.clf()
