@@ -66,7 +66,7 @@ git checkout 0.1
 python3 -m pip install -e .
 ```
 
-3. Deploy the HASTE Gateway according to (the instructions)[https://github.com/HASTE-project/haste-gateway] in that repository. Note the credentials.
+3. Deploy the HASTE Gateway according to [the instructions](https://github.com/HASTE-project/haste-gateway) in that repository. Note the credentials.
 
 4. The dataset requires some preparation to reproduce the results in the paper. There are two issues: (a) the published dataset is the original images from the miniTEM, these are greyscale images encoded as 3-channel color images. For the experiment, we use the same images, but correctly encoded as greyscale. (b) one of the cases in the benchmarking run is a baseline where all images are pre-processed with the flood-fill algorithm offline, this offline step needs to be run.
 
