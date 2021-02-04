@@ -112,7 +112,7 @@ It will try to run forever generating more data for an average makespan. 40 iter
 Create a new subdirectory (e.g. `run0`) and move this collection of log files, so they are kept together.
 If you run the benchmarking harness multiple times, clear out any old log files. 
 
-We only need the makespan to generate the boxplots. We use grep to find the lines of log data we need.
+We only need the makespan to generate the boxplots. We use grep to find the lines of log data we need, this file is read by the next Python script.
 ```
 cd ./haste/desktop_agent/benchmarking/logs/run0
 grep Queue_is_empty *.log > grepped.txt
