@@ -5,6 +5,7 @@ from subprocess import Popen
 from types import SimpleNamespace
 import os
 import traceback
+import tempfile
 
 from haste.desktop_agent import golden
 from haste.desktop_agent.golden import get_golden_prio_for_filename
@@ -18,6 +19,9 @@ from haste.desktop_agent.config import MAX_CONCURRENT_XFERS, FAKE_UPLOAD, \
     FAKE_UPLOAD_SPEED_BITS_PER_SECOND, PREPROCESSOR_CMD, DELETE_FILE_AFTER_SENDING
 from haste.desktop_agent.benchmarking.benchmarking_config import QUIT_AFTER
 from haste.desktop_agent.post_file import send_file
+
+# Create new temp directory. Deleted on exit.
+temp_dir = tempfile.TemporaryDirectory()
 
 # TODO: store timestamps also and clear the old ones
 already_written_filenames = set()
@@ -97,19 +101,19 @@ def put_event_on_queue(event):
         return
 
     # Set is a hashset, this is O(1)
-    if src_path.split('/')[-1] in already_written_filenames:
+    if os.path.basename(src_path) in already_written_filenames:
         logging.debug(f'File already sent: {src_path}')
         return
 
-    already_written_filenames.add(src_path.split('/')[-1])
+    already_written_filenames.add(os.path.basename(src_path))
 
     event.timestamp = time.time()
 
     if timestamp_first_event < 0:
         timestamp_first_event = event.timestamp
 
-    if False:
-        event.golden_bytes_reduction = get_golden_prio_for_filename(src_path.split('/')[-1])
+    # if False:
+    #     event.golden_bytes_reduction = get_golden_prio_for_filename(src_path.split('/')[-1])
 
     event.preprocessed = False
     event.file_size = get_file_size(event.src_path)
@@ -156,7 +160,7 @@ async def preprocess_async_loop_new_proc(name, queue):
             if file_system_event is not None:
                 logging.info(f'preprocessing: {file_system_event.src_path}')
 
-                output_filepath = '/tmp/' + file_system_event.src_path.split('/')[-1]
+                output_filepath = temp_dir.name + '/' + os.path.basename(file_system_event.src_path)
 
                 # line_to_send = f"{file_system_event.src_path},{output_filepath}\n"
                 #
@@ -175,7 +179,7 @@ async def preprocess_async_loop_new_proc(name, queue):
                 time_start = time.time()
 
                 proc = await asyncio.create_subprocess_shell(
-                    f'python3 -m vironova_image_compression.ben_images.threshold_overwrite {file_system_event.src_path} {output_filepath}',
+                    f'python3 -m haste.desktop_agent.flood_fill_preprocessor.threshold_overwrite {file_system_event.src_path} {output_filepath}',
                     stdout=asyncio.subprocess.PIPE,
                     stdin=asyncio.subprocess.PIPE)
 
@@ -237,7 +241,7 @@ async def preprocess_async_loop_service(name, queue):
             if file_system_event is not None:
                 logging.info(f'preprocessing: {file_system_event.src_path}')
 
-                output_filepath = '/tmp/' + file_system_event.src_path.split('/')[-1]
+                output_filepath = temp_dir.name + '/' + os.path.basename(file_system_event.src_path)
 
                 line_to_send = f"{file_system_event.src_path},{output_filepath}\n"
 
@@ -258,10 +262,9 @@ async def preprocess_async_loop_service(name, queue):
                 file_system_event2.timestamp = time.time()
                 file_system_event2.src_path = output_filepath
 
-                file_system_event2.file_size = vironova_image_compression.ben_images.file_utils.get_file_size(output_filepath)
+                file_system_event2.file_size = get_file_size(output_filepath)
 
-                file_system_event2.golden_bytes_reduction = (
-                                                                    file_system_event.file_size - file_system_event2.file_size) / dur_preproc
+                file_system_event2.golden_bytes_reduction = (file_system_event.file_size - file_system_event2.file_size) / dur_preproc
 
                 stats_total_preproc_duration += dur_preproc
 
@@ -464,7 +467,11 @@ async def main():
 
 if __name__ == '__main__':
     if True:
-        asyncio.run(main())
+        try:
+            asyncio.run(main())
+        finally:
+            temp_dir.cleanup()
+
     else:
         # Debug mode.
         EventLoopDelayMonitor(interval=1)
