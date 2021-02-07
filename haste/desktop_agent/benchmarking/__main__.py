@@ -56,7 +56,7 @@ async def main():
             cmd = [sys.executable,
                    '-m', 'haste.desktop_agent',
                    '--include', haste.desktop_agent.benchmarking.benchmarking_config.EXTENSION,
-                   '--tag', 'trash',
+                   '--tag', 'bench',
                    '--host', HASTE_GATEWAY_HOST,
                    '--username', HASTE_GATEWAY_USERNAME,
                    '--password', HASTE_GATEWAY_PASSWORD,
