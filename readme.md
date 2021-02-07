@@ -110,7 +110,7 @@ python3 -m haste.desktop_agent.benchmarking
 This will generate a set of log files for the multiple runs for their different configurations in the current working directory. 
 It will try to run forever generating more data for an average makespan. 40 iterations will be 5 runs for each configuration, enough for a reasonable average.
 Create a new subdirectory in `haste/desktop_agent/benchmarking/logs` (e.g. `run0`) and move this collection of log files, so they are kept together.
-If you run the benchmarking harness multiple times, clear out any old log files. 
+If you run the benchmarking harness multiple times, you might want to clear out the old log files so that all the data relates to a single 'run' of the benchmarking harness. 
 
 We only need the makespan to generate the boxplots. We use grep to find the lines of log data we need, this file is read by the next Python script.
 ```
