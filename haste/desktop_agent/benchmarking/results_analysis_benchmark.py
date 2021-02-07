@@ -178,11 +178,11 @@ plt.boxplot([
 
     df['bytes_sent'][(df['count_preproc_threads'] == 1) & (df['mode'] == True) & (df['source_dir'] == 'greyscale')]/df['time_taken'][(df['count_preproc_threads'] == 1) & (df['mode'] == True) & (df['source_dir'] == 'greyscale')],
     df['bytes_sent'][(df['count_preproc_threads'] == 2) & (df['mode'] == True) & (df['source_dir'] == 'greyscale')]/df['time_taken'][(df['count_preproc_threads'] == 2) & (df['mode'] == True) & (df['source_dir'] == 'greyscale')],
-    df['bytes_sent'][(df['count_preproc_threads'] == 3) & (df['mode'] == True) & (df['source_dir'] == 'greyscale')]/df['time_taken'][(df['count_preproc_threads'] == 3) & (df['mode'] == True) & (df['source_dir'] == 'greyscale')],
+    # df['bytes_sent'][(df['count_preproc_threads'] == 3) & (df['mode'] == True) & (df['source_dir'] == 'greyscale')]/df['time_taken'][(df['count_preproc_threads'] == 3) & (df['mode'] == True) & (df['source_dir'] == 'greyscale')],
 
     df['bytes_sent'][(df['count_preproc_threads'] == 1) & (df['mode'] == False) & (df['source_dir'] == 'greyscale')]/df['time_taken'][(df['count_preproc_threads'] == 1) & (df['mode'] == False) & (df['source_dir'] == 'greyscale')],
     df['bytes_sent'][(df['count_preproc_threads'] == 2) & (df['mode'] == False) & (df['source_dir'] == 'greyscale')]/df['time_taken'][(df['count_preproc_threads'] == 2) & (df['mode'] == False) & (df['source_dir'] == 'greyscale')],
-    df['bytes_sent'][(df['count_preproc_threads'] == 3) & (df['mode'] == False) & (df['source_dir'] == 'greyscale')]/df['time_taken'][(df['count_preproc_threads'] == 3) & (df['mode'] == False) & (df['source_dir'] == 'greyscale')],
+    # df['bytes_sent'][(df['count_preproc_threads'] == 3) & (df['mode'] == False) & (df['source_dir'] == 'greyscale')]/df['time_taken'][(df['count_preproc_threads'] == 3) & (df['mode'] == False) & (df['source_dir'] == 'greyscale')],
 
     df['bytes_sent'][(df['count_preproc_threads'] == 0) & (df['source_dir'] == 'ffill')]/df['time_taken'][(df['count_preproc_threads'] == 0) & (df['source_dir'] == 'ffill')],
     ],
@@ -191,11 +191,11 @@ plt.boxplot([
 
         'g,1,s',
         'g,2,s',
-        'g,3,s',
+        # 'g,3,s',
 
         'g,1,r',
         'g,2,r',
-        'g,3,r',
+        # 'g,3,r',
 
         'ffill,0',
     ],
