@@ -16,7 +16,7 @@ import logging
 from haste.desktop_agent.FSEvents import HasteFSEventHandler
 from haste.desktop_agent.args import initialize
 from haste.desktop_agent.config import MAX_CONCURRENT_XFERS, FAKE_UPLOAD, \
-    FAKE_UPLOAD_SPEED_BITS_PER_SECOND, PREPROCESSOR_CMD, DELETE_FILE_AFTER_SENDING
+    FAKE_UPLOAD_SPEED_BITS_PER_SECOND, DELETE_FILE_AFTER_SENDING
 from haste.desktop_agent.benchmarking.benchmarking_config import QUIT_AFTER
 from haste.desktop_agent.post_file import send_file
 
@@ -224,83 +224,6 @@ async def preprocess_async_loop_new_proc(name, queue):
     except Exception as ex:
         logging.error(traceback.format_exc())
         raise ex
-
-
-async def preprocess_async_loop_service(name, queue):
-    global stats_total_preproc_duration
-    count = 0
-    try:
-        proc = await asyncio.create_subprocess_shell(
-            PREPROCESSOR_CMD,
-            stdout=asyncio.subprocess.PIPE,
-            stdin=asyncio.subprocess.PIPE)
-
-        while True:
-            file_system_event = await pop_event(True)
-
-            if file_system_event is not None:
-                logging.info(f'preprocessing: {file_system_event.src_path}')
-
-                output_filepath = temp_dir.name + '/' + os.path.basename(file_system_event.src_path)
-
-                line_to_send = f"{file_system_event.src_path},{output_filepath}\n"
-
-                # add to the buffer
-                proc.stdin.write(line_to_send.encode())
-                await proc.stdin.drain()
-
-                stdoutline = await proc.stdout.readline()
-                stdoutline = stdoutline.decode().strip()
-                logging.info(f'stdout from preprocessor: {stdoutline}')
-
-                dur_preproc = float(stdoutline.split(',')[0])
-                dur_waiting = float(stdoutline.split(',')[1])
-
-                logging.debug(f'preprocessor waiting: {dur_waiting}')
-
-                file_system_event2 = SimpleNamespace()
-                file_system_event2.timestamp = time.time()
-                file_system_event2.src_path = output_filepath
-
-                file_system_event2.file_size = get_file_size(output_filepath)
-
-                file_system_event2.golden_bytes_reduction = (file_system_event.file_size - file_system_event2.file_size) / dur_preproc
-
-                stats_total_preproc_duration += dur_preproc
-
-                file_system_event2.preprocessed = True
-                file_system_event2.index = file_system_event.index
-
-                event_to_re_add = file_system_event2
-
-                count += 1
-                logging.info(f'preprocessed {count} files')
-
-                if DELETE_FILE_AFTER_SENDING:
-                    os.unlink(file_system_event.src_path)
-
-            else:
-                # We've preprocessed everything. just re-add the original event.
-                event_to_re_add = file_system_event
-
-            await push_event(event_to_re_add)
-            queue.task_done()
-
-            # We've preprocessed everything for now. just re-add the original event and 'sleep' a little.
-            if file_system_event is None:
-                await asyncio.sleep(0.2)
-
-    except Exception as ex:
-        logging.error(traceback.format_exc())
-        raise ex
-
-
-# def log_queue_info():
-#     # Log info about the present state of the queue
-#     count_preprocessed = len(list(filter(lambda f: f.preprocessed, files_to_send)))
-#     count_not_preprocessed = len(files_to_send) - count_preprocessed
-#     logging.info(f'PLOT - {time.time()} - {count_preprocessed} - {count_not_preprocessed}')
-
 
 async def push_event(event_to_re_add):
     global needs_sorting, stats_events_pushed_second_queue_preprocessed, stats_events_pushed_second_queue_raw

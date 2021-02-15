@@ -15,6 +15,4 @@ if FAKE_UPLOAD:
 else:
     MAX_CONCURRENT_XFERS = 15 # frequency is 20, so that minus the max number of threads.
 
-# Command invoked for pre-processing
-PREPROCESSOR_CMD = 'python3 -m haste.desktop_agent.preprocessor'
 DELETE_FILE_AFTER_SENDING = True
