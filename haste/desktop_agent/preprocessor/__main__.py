@@ -2,7 +2,11 @@ import datetime
 import logging
 import os
 import sys
-import ben_images.flood_fill
+
+#from ben_images.flood_fill import flood_fill_outer
+from haste.desktop_agent.flood_fill_preprocessor.flood_fill import flood_fill_outer
+
+#import ben_images.flood_fill
 from PIL import Image
 import numpy as np
 import time
@@ -15,7 +19,8 @@ def convert_file(input_filepath, output_filepath):
     img = Image.open(input_filepath)
     im_array1 = np.asarray(img)
 
-    result = ben_images.flood_fill.flood_fill_outer(im_array1)
+    #result = ben_images.flood_fill.flood_fill_outer(im_array1)
+    result = flood_fill_outer(im_array1)
 
     # to greyscale
     Image.fromarray(result).convert('L').save(output_filepath, format='PNG')

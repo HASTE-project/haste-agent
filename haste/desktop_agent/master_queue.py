@@ -32,7 +32,7 @@ class MasterQueue:
 
         self.infos = []
         assert STATE_NO_FILE == 0
-        self.states = np.zeros(capacity, dtype=np.int)
+        self.states = np.zeros(capacity, dtype=int)
         self.known_scores = np.full(capacity, -1)
         self.estimated_scores = np.ones(capacity)
         self.index = np.arange(0, capacity)

@@ -1,7 +1,7 @@
 import os
 
+
 from haste.desktop_agent import golden
-from haste.desktop_agent.benchmarking.__main__ import CONFIGS
 import matplotlib.pyplot as plt
 
 # grep Queue_is_empty *.log
@@ -27,18 +27,40 @@ spline_states = []
 # 2019-03-25 15:59:02.253 - AGENT - MainThread - INFO - PLOT_QUEUE - 1553525942.2393758 - POP_PREPROCESS - 18
 # 2019-03-25 15:59:02.253 - AGENT - MainThread - INFO - PLOT_QUEUE - 1553525942.253982 - POP_SEND - 49
 
-run = '15_mon_pm'
-stream_id = 'agent_log_2019_04_15__18_59_55_trash'#'2019_03_29__11_18_21_trash'
+run = None
+
+#input()
+
+# run = '2019_04_29-03'
+#stream_id = 'agent_log_2019_04_29__10_29_35_trash'#
+
+run = '11_fri_am'
+#stream_id = 'agent_log_2019_03_29__11_18_21_trash'
+stream_id = 'agent_log_2019_03_29__11_18_21_trash'
+#stream_id = 'agent_log_2019_03_29__11_30_37_trash'
 
 stream_id = stream_id.replace('agent_log_', '')
+stream_id = stream_id.replace('.log', '')
+
+if run is not None:
+    filename = f'logs/{run}/agent_log_{stream_id}.log'
+else:
+    filename = f'../../../logs/agent_log_{stream_id}.log'
+
+if not filename.endswith('.log'):
+    filename += '.log'
 
 print(os.getcwd())
 
 # with open(f'logs/2_tues_am_office/agent_log_2019_03_26__10_10_21_trash.log') as f:
-with open(f'logs/{run}/agent_log_{stream_id}.log') as f:
+with open(filename) as f:
     for line in f.readlines():
 
+        if line == '\n':
+            continue
+
         if 'known_scores_are' in line:
+            print(line)
             s = line.split('*')
             known_scores = np.array(eval(s[-4]))
             states_are = np.array(eval(s[-2]))
@@ -72,9 +94,8 @@ with open(f'logs/{run}/agent_log_{stream_id}.log') as f:
 
 top_index = QUIT_AFTER
 golden_compressibility = (golden.csv_results['input_file_size_bytes'] - golden.csv_results['output_file_size_bytes']) / \
-                         golden.csv_results[
-                             'duration_total']
-golden_compressibility = golden_compressibility[:QUIT_AFTER]
+                         golden.csv_results['duration_total']
+#golden_compressibility = golden_compressibility[:QUIT_AFTER]
 golden_compressibility = np.array(golden_compressibility)
 golden_compressibility_tiled = np.tile(golden_compressibility, (4, 1))
 golden_compressibility_tiled = np.transpose(golden_compressibility_tiled)
@@ -94,11 +115,13 @@ ax.legend()
 plt.show()
 fig.savefig(f'figures/{stream_id}.0.overall.png')
 
-# ---
+# don't draw the splines one.
+#sys.exit()
+
+# --------------------------------------------------------------------------------------------------------
 
 capacity = QUIT_AFTER
 index = np.arange(0, capacity)
-
 
 def fit_spline(known_scores):
     # Fit the spline:
@@ -133,19 +156,25 @@ def fit_spline(known_scores):
 
 
 plt.clf()
+
+
 plt.figure(figsize=(7, 3.5), dpi=500)
 
-if True:
+if False: # print the golden NMSR as a line
     X2 = np.arange(0, capacity, 1)
     Y2 = golden_compressibility
     plt.plot(X2, Y2, color=(1, 0, 0, 0.5))
 
-    for i, scores in enumerate(spline_scores[::5]):
-        f, min, max = fit_spline(scores)
-        if f is not None:
-            num_steps = int((max - min) / capacity * 1000)
-            X = np.linspace(min, max, num_steps, endpoint=True)
-            plt.plot(X, f(X), color=(0, 0.1, 1, 0.2 + (i / capacity)**5 * 0.3))
+if False: # Print the intermediate revision of the splines
+    if True:
+        for i, scores in enumerate(spline_scores[::5]):
+            f, min, max = fit_spline(scores)
+            if f is not None:
+                num_steps = int((max - min) / capacity * 1000)
+                X = np.linspace(min, max, num_steps, endpoint=True)
+                plt.plot(X, f(X), color=(0, 0.1, 1, 0.2 + (i / capacity)**5 * 0.3))
+
+    # The final revision of the splines
     if True:
         scores = spline_scores[-1]
         f, min, max = fit_spline(scores)
@@ -155,28 +184,34 @@ if True:
             plt.plot(X, f(X), color=(0, 1, 0))
 
 
-X_files_that_were_preprocessed = []
-Y_files_that_were_preprocessed = []
 
-for spline_state in spline_states:
-    for i in range(len(spline_state)):
-        state = spline_state[i]
-        if state == 2 or state == 3:
-            if i not in X_files_that_were_preprocessed:
-                X_files_that_were_preprocessed.append(i)
-                Y_files_that_were_preprocessed.append(golden_compressibility[i])
+if False: # different colours for pre-processed and not.
+    X_files_that_were_preprocessed = []
+    Y_files_that_were_preprocessed = []
 
-plt.scatter(X_files_that_were_preprocessed, Y_files_that_were_preprocessed)
+    for spline_state in spline_states:
+        for i in range(len(spline_state)):
+            state = spline_state[i]
+            if state == 2 or state == 3:
+                if i not in X_files_that_were_preprocessed:
+                    X_files_that_were_preprocessed.append(i)
+                    Y_files_that_were_preprocessed.append(golden_compressibility[i])
 
-X_files_that_were_not_preprocessed = []
-Y_files_that_were_not_preprocessed = []
+    #
+    if True:
+        plt.scatter(X_files_that_were_preprocessed, Y_files_that_were_preprocessed)
 
-for i in range(len(spline_states[0])):
-    if i not in X_files_that_were_preprocessed:
-        X_files_that_were_not_preprocessed.append(i)
-        Y_files_that_were_not_preprocessed.append(golden_compressibility[i])
+    X_files_that_were_not_preprocessed = []
+    Y_files_that_were_not_preprocessed = []
 
-plt.scatter(X_files_that_were_not_preprocessed, Y_files_that_were_not_preprocessed)
+    for i in range(len(spline_states[0])):
+        if i not in X_files_that_were_preprocessed:
+            X_files_that_were_not_preprocessed.append(i)
+            Y_files_that_were_not_preprocessed.append(golden_compressibility[i])
+
+    #
+    if True:
+        plt.scatter(X_files_that_were_not_preprocessed, Y_files_that_were_not_preprocessed)
 
 
-plt.savefig(f'figures/{stream_id}.1.splines-blended.png')
+    plt.savefig(f'figures/{stream_id}.1.splines-blended-ver2.png')

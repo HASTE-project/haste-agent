@@ -5,20 +5,21 @@ import shutil
 import logging
 import haste.desktop_agent.config
 import sys
+import benchmarking_config
 
 # num_preproc_core, source_dir, enable_prio_by_splines
 CONFIGS = [
-    (0, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/', False),
+    (0, benchmarking_config.GREYSCALE_DIR, False),
 
-    (1, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/', True),
-    (2, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/', True),
-    (3, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/', True),
+    (1, benchmarking_config.GREYSCALE_DIR, True),
+    (2, benchmarking_config.GREYSCALE_DIR, True),
+    (3, benchmarking_config.GREYSCALE_DIR, True),
 
-    (1, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/', False),
-    (2, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/', False),
-    (3, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/', False),
+    (1, benchmarking_config.GREYSCALE_DIR, False),
+    (2, benchmarking_config.GREYSCALE_DIR, False),
+    (3, benchmarking_config.GREYSCALE_DIR, False),
 
-    (0, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/ffill/', False),
+    (0, benchmarking_config.FFILL_DIR, False),
 ]
 
 
@@ -47,8 +48,8 @@ async def main():
                    '--include', haste.desktop_agent.config.EXTENSION,
                    '--tag', 'trash',
                    '--host', 'haste-gateway.benblamey.com:80',
-                   '--username', 'haste',
-                   '--password', 'mr_frumbles_bad_day',
+                   '--username', '??????',
+                   '--password', '??????',
                    haste.desktop_agent.config.TARGET_DIR,
                    '--x-preprocessing-cores', str(c[0])]
             if not c[2]:

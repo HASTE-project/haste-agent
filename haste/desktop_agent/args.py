@@ -69,6 +69,8 @@ def initialize():
 
     logging.getLogger('').addHandler(file_logger)
 
+    logging.getLogger('').addHandler(logging.StreamHandler())
+
     logging.debug(f'command line args arg: {sys.argv}')
     logging.info(f'stream_id: {stream_id}')
 
@@ -79,3 +81,4 @@ def initialize():
     logging.info(f'simulator_frequency (incase simulator used): {FREQUENCY}')
 
     return path, dot_and_extension, stream_id_tag, username, password, host, stream_id, x_preprocessing_cores, x_enable_prioritization
+    logging.debug(f'command line args arg: {sys.argv}')
