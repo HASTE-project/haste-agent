@@ -3,7 +3,9 @@ import pandas as pd
 from haste.desktop_agent.benchmarking.__main__ import CONFIGS
 import matplotlib.pyplot as plt
 
-RUN = '17_tues_pm2'
+#RUN = '2019_05_08-01'
+RUN = '11_fri_am'
+#RUN = 'foo3'
 
 # grep Queue_is_empty *.log > grepped.txt
 
@@ -29,8 +31,11 @@ with open(f'logs/{RUN}/grepped.txt') as f:
         count_preproc_threads.append(config[0])
         splines_enabled.append(config[2])
         source_dir.append(config[1].split('/')[-2])
-        time_taken.append(float(line.split(' ')[-4]))
-        bytes_sent.append(float(line.split(' ')[-1]))
+        log_line = line.split(' ')
+
+        # TODO: fix this
+        time_taken.append(float(log_line[14]))
+        bytes_sent.append(float(log_line[17]))
 
 
 data = {
@@ -43,8 +48,11 @@ data = {
 df = pd.DataFrame(data,
                   columns=['count_preproc_threads', 'splines_enabled', 'source_dir', 'time_taken', 'bytes_sent'])
 
+
+
 plt.clf()
-plt.boxplot([
+boxes = [
+
     df['time_taken'][(df['count_preproc_threads'] == 0) & (df['splines_enabled'] == False) & (df['source_dir'] == 'greyscale')],
 
     df['time_taken'][(df['count_preproc_threads'] == 1) & (df['splines_enabled'] == True) & (df['source_dir'] == 'greyscale')],
@@ -56,22 +64,37 @@ plt.boxplot([
     df['time_taken'][(df['count_preproc_threads'] == 3) & (df['splines_enabled'] == False) & (df['source_dir'] == 'greyscale')],
 
     df['time_taken'][(df['count_preproc_threads'] == 0) & (df['source_dir'] == 'ffill')],
-],
-    labels=[
-        'g,0,r',
+]
 
-        'g,1,s',
-        'g,2,s',
-        'g,3,s',
 
-        'g,1,r',
-        'g,2,r',
-        'g,3,r',
 
-        'ffill,0',
-    ], whis='range'
-)
-plt.savefig(f'figures/{RUN}.0.boxwhisker.time_taken.png')
+plt.boxplot(boxes,
+                #,
+                tick_labels=[
+                    # The results published in the paper refer to the original configs, which used random ordered baselines.
+                    # see benchmarking/__main__.py
+
+                    'uponly',
+                    '1,s',
+                    '2,s',
+                     '3,s',
+                    '1,r',
+                    '2,r',
+                     '3,r',
+                    'offline',
+                ], whis=(0, 100)
+                )
+
+
+plt.grid(True, axis='y', linestyle='--', alpha=0.5)
+plt.ylabel('Makespan (seconds)')
+plt.xlabel('Configuration')
+
+
+#plt.show()
+plt.savefig(f'figures/{RUN}_0_boxwhisker_time_taken.png', dpi=600)
+
+quit()
 
 plt.clf()
 plt.boxplot([

@@ -2,31 +2,26 @@ import datetime
 import logging
 import os
 import sys
-
-#from ben_images.flood_fill import flood_fill_outer
-from haste.desktop_agent.flood_fill_preprocessor.flood_fill import flood_fill_outer
-
-#import ben_images.flood_fill
+import ben_images.flood_fill
 from PIL import Image
 import numpy as np
 import time
-from sys import stdin
+from haste.desktop_agent.flood_fill_preprocessor.flood_fill import convert_file
 
 from haste.desktop_agent.config import LOGGING_FORMAT_DATE, LOGGING_FORMAT_AGENT
+
+# NOTE: This code is run as a configured external command from the HASTE Agent, filenames for conversion are piped to STDIN.
+
 
 
 def convert_file(input_filepath, output_filepath):
     img = Image.open(input_filepath)
     im_array1 = np.asarray(img)
 
-    #result = ben_images.flood_fill.flood_fill_outer(im_array1)
-    result = flood_fill_outer(im_array1)
+    result = ben_images.flood_fill.flood_fill_outer(im_array1)
 
     # to greyscale
-    # 7 is the compression level which best replicates the benchmarking.
-    Image.fromarray(result).convert('L').save(output_filepath,
-                                              compress_level=7,
-                                              format='PNG')
+    Image.fromarray(result).convert('L').save(output_filepath, format='PNG')
 
     return output_filepath
 
