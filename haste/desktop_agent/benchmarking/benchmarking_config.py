@@ -6,16 +6,13 @@
 
 import os
 
-# Images downloaded from https://doi.org/10.17044/scilifelab.12771614.v1.
-
 # Base working directory:
-#_BASE_DIR = os.path.expanduser('~/haste_agent_benchmarking_images')
-#_BASE_DIR = '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen'
 _BASE_DIR = os.path.expanduser('~/Documents/_RESEARCH_AND_LEARNING/p-message-size-aware/code-message-size-aware/2019_02_04__11_34_55_vironova/all/gen')
 
+# Images downloaded from https://doi.org/10.17044/scilifelab.12771614.v1.
 ORIGINAL_DIR = f'{_BASE_DIR}/orig/'
 
-# This is the directory for the identical images, correctly encoded as greyscale, which we generate:
+# This is the directory for the identical images, re-saved as greyscale, which we generate:
 GREYSCALE_DIR = f'{_BASE_DIR}/greyscale/'
 
 # This is the directory for the same images with the flood-fill applied offline, used as one of the baselines:

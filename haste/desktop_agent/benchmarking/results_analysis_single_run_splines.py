@@ -1,8 +1,6 @@
 import os
 
-
 from haste.desktop_agent import golden
-import matplotlib.pyplot as plt
 
 # grep Queue_is_empty *.log
 from haste.desktop_agent.config import QUIT_AFTER
@@ -68,27 +66,30 @@ with open(filename) as f:
                 raise (Exception())
 
 top_index = QUIT_AFTER
-golden_compressibility = (golden.csv_results['input_file_size_bytes'] - golden.csv_results['output_file_size_bytes']) / \
-                         golden.csv_results['duration_total']
-#golden_compressibility = golden_compressibility[:QUIT_AFTER]
-golden_compressibility = np.array(golden_compressibility)
-golden_compressibility_tiled = np.tile(golden_compressibility, (4, 1))
-golden_compressibility_tiled = np.transpose(golden_compressibility_tiled)
 
-fig, ax2 = plt.subplots()
+if False:
+    # This figure was not used in the paper.
+    golden_compressibility = (golden.csv_results['input_file_size_bytes'] - golden.csv_results['output_file_size_bytes']) / \
+                             golden.csv_results['duration_total']
+    #golden_compressibility = golden_compressibility[:QUIT_AFTER]
+    golden_compressibility = np.array(golden_compressibility)
+    golden_compressibility_tiled = np.tile(golden_compressibility, (4, 1))
+    golden_compressibility_tiled = np.transpose(golden_compressibility_tiled)
 
-ax2.imshow(golden_compressibility_tiled, interpolation='nearest', aspect='auto', zorder=3)
-ax2.legend()
+    fig, ax2 = plt.subplots()
 
-ax = ax2.twiny()
-ax.plot(x_new_file_times, y_new_file_indices, color='r', zorder=2, label='new_files')
-ax.scatter(x_send_times, y_send_indices, color='m', zorder=2, label='send')
-ax.scatter(x_preprocess_times, y_preprocess_indices, color='w', zorder=2, label='prepcess')
-ax.scatter(x_preprocess_search_times, y_preprocess_search_indices, color='y', zorder=2, label='prepcess_search')
-ax.legend()
+    ax2.imshow(golden_compressibility_tiled, interpolation='nearest', aspect='auto', zorder=3)
+    ax2.legend()
 
-plt.show()
-fig.savefig(f'figures/{stream_id}.0.overall.png')
+    ax = ax2.twiny()
+    ax.plot(x_new_file_times, y_new_file_indices, color='r', zorder=2, label='new_files')
+    ax.scatter(x_send_times, y_send_indices, color='m', zorder=2, label='send')
+    ax.scatter(x_preprocess_times, y_preprocess_indices, color='w', zorder=2, label='prepcess')
+    ax.scatter(x_preprocess_search_times, y_preprocess_search_indices, color='y', zorder=2, label='prepcess_search')
+    ax.legend()
+
+    plt.show()
+    fig.savefig(f'figures/{stream_id}.0.overall.png')
 
 # don't draw the splines one.
 #sys.exit()

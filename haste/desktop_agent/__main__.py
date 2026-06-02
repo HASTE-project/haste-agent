@@ -7,7 +7,6 @@ import os
 import traceback
 import tempfile
 
-from haste.desktop_agent.golden import get_golden_prio_for_filename
 from haste.desktop_agent.master_queue import MasterQueue
 from watchdog.observers import Observer
 import asyncio
@@ -100,9 +99,6 @@ def put_event_on_queue(event):
 
     if timestamp_first_event < 0:
         timestamp_first_event = event.timestamp
-
-    if False:
-        event.golden_bytes_reduction = get_golden_prio_for_filename(src_path.split('/')[-1])
 
     event.preprocessed = False
     event.file_size = get_file_size(event.src_path)

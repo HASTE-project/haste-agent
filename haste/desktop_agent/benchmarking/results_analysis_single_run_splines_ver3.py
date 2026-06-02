@@ -1,8 +1,6 @@
 import os
-import sys
 
 from haste.desktop_agent import golden
-from haste.desktop_agent.benchmarking.__main__ import CONFIGS
 import matplotlib.pyplot as plt
 
 from haste.desktop_agent.benchmarking.benchmarking_analysis_config import get_run_streamid_tag_filename_grepped
@@ -114,6 +112,8 @@ with open(filename) as f:
                 raise Exception()
 
 top_index = QUIT_AFTER
+
+# The offline NMSR values, used in some plots.
 golden_compressibility = (golden.csv_results['input_file_size_bytes'] - golden.csv_results['output_file_size_bytes']) / \
                          golden.csv_results['duration_total']
 #golden_compressibility = golden_compressibility[:QUIT_AFTER]
@@ -121,15 +121,11 @@ golden_compressibility = np.array(golden_compressibility)
 golden_compressibility_tiled = np.tile(golden_compressibility, (4, 1))
 golden_compressibility_tiled = np.transpose(golden_compressibility_tiled)
 
-#fig, ax2 = plt.subplots()
-
-#ax2.imshow(golden_compressibility_tiled, interpolation='nearest', aspect='auto', zorder=3)
-#ax2.legend()
-
 
 # --------------------------------------------------------------------------------------------------------
-if True:
-    # The older one with the green/blue background
+if False:
+    # The one with the green/blue background, not used in paper
+
     fig, ax2 = plt.subplots()
 
     ax2.imshow(golden_compressibility_tiled, interpolation='nearest', aspect='auto', zorder=3)

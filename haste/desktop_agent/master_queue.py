@@ -1,7 +1,6 @@
 import logging
 
 from haste.desktop_agent.config import LOGGING_FORMAT_AGENT, LOGGING_FORMAT_DATE
-from haste.desktop_agent.golden import get_golden_prio_for_filename
 from scipy.interpolate import interp1d
 import matplotlib.pyplot as plt
 import numpy as np
