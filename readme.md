@@ -9,17 +9,6 @@ This yields a mimimum stream-processing makespan in cases where overall throughp
 
 In its simplest configuration, it simply monitors a directory for new files, then performs a HTTP POST for each new file. The novelty is in smart prioritization of a file-size reducing local operator.
 
-This tool is used in use-cases in microscopy applications, discussed in the following publications:
-```
-"Rapid development of cloud-native intelligent data pipelines for scientific data streams using the HASTE Toolkit"
-https://www.biorxiv.org/content/10.1101/2020.09.13.274779v1
-```
-
-```
-Resource- and Message Size-Aware Scheduling of Stream Processing at the Edge with application to Realtime Microscopy
-https://arxiv.org/abs/1912.09088
-```
-
 ## Command Line Arguments
 
 ```
