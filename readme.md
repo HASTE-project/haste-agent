@@ -49,8 +49,7 @@ optional arguments:
 
 (Known Issue: doesn't work when targeting a mounted dir under a Windows Guest/Mac Host)
 
-# To Reproduce the Paper Results
-
+# To Run Benchmarking
 
 0. Note on upload bandwidth limiting.
 Note that the results will depend on the performance of the machine, and the upload rate, the upload bandwidth needs to be limited if you are attempting to reproduce the results. 
@@ -65,7 +64,7 @@ git clone git@github.com:HASTE-project/haste-agent.git
 
 1. Chekout the version presented in the paper:
 ```
-git checkout 0.1
+git switch benchmarking-results
 ```
 
 2. Install the HASTE agent:
@@ -118,12 +117,14 @@ cd ./haste/desktop_agent/benchmarking/logs/run0
 grep Queue_is_empty *.log > grepped.txt
 ``` 
 
-8. Now, the script `results_analysis_benchmark.py` can be used to generate the plots seen in the paper. Set the variable `run` as above.
+8. Now, the scripts `results_analysis_*.py` can be used to generate the plots seen in the paper. Set the variable `run` as above.
 Figures will be generated in the `./haste/desktop_agent/benchmarking/figures` directory. The 'time_taken' plot will visualize the makespans as a boxplot, as shown in the paper.
 `results_analysis_single_run_splines.py` can be used for a more detailed visualization  
 
 
+Note: the performance depends on the hardware, upload speed, and execution time (and effect of) the image processing operator.
+However, it should be possible to run the benchmarking. 
 
 # Contact
 
-I'd be keen to hear from you! (myfirstname) . (mylastname)@mau.se
+I'd be keen to hear from you! (myfirstname).(mylastname)@mau.se
