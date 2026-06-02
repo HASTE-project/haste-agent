@@ -9,6 +9,8 @@ This yields a mimimum stream-processing makespan in cases where overall throughp
 
 In its simplest configuration, it simply monitors a directory for new files, then performs a HTTP POST for each new file. The novelty is in smart prioritization of a file-size reducing local operator.
 
+** Note: this branch is intended only for reproducibility of the benchmarking. **
+
 ## Command Line Arguments
 
 ```
