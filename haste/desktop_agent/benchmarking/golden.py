@@ -1,9 +1,8 @@
-import os
 import time
-from os.path import sep
 
 import pandas as pd
 
+from haste.desktop_agent.benchmarking.benchmarking_analysis_config import golden_nmsr_csv
 
 dtypes={
     'filename': "string",
@@ -22,10 +21,8 @@ names=[
     'output_file_size_bytes',
 ],
 
-path = os.path.expanduser('~/Documents/_RESEARCH_AND_LEARNING/p-message-size-aware/code-message-size-aware/vironova-image-compression/results/viron_2019_02_04__11_34_55.csv')
-
 csv_results = pd.read_csv(
-    path,
+    golden_nmsr_csv,
     sep=",",
     header=0)
 
