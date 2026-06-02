@@ -8,7 +8,7 @@ setup(name='haste_desktop_agent',
       namespace_packages=['haste'],
       description='Desktop Client for the HASTE platform: http://haste.research.it.uu.se',
       author='Ben Blamey',
-      author_email='ben.blamey@it.uu.se',
+      author_email='ben.blamey@mau.se',
       install_requires=[
           'watchdog',
           'aiohttp'
