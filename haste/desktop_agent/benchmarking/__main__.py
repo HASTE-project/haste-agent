@@ -6,6 +6,8 @@ import logging
 import haste.desktop_agent.config
 import sys
 
+# Note: to run the benchmarking, use the branch benchmarking-results.
+
 # num_preproc_core, source_dir, enable_prio_by_splines
 CONFIGS = [
     (0, '/Users/benblamey/projects/haste/images/2019_02_04__11_34_55_vironova/all/gen/greyscale/', haste.desktop_agent.config.MODE_NATURAL),
