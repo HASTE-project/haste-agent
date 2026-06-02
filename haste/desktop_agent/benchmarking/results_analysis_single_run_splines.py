@@ -28,7 +28,6 @@ RUN, stream_id, tag, filename, filename_grepped = get_run_streamid_tag_filename_
 
 print(os.getcwd())
 
-# with open(f'logs/2_tues_am_office/agent_log_2019_03_26__10_10_21_trash.log') as f:
 with open(filename) as f:
     for line in f.readlines():
 
