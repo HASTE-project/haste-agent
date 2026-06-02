@@ -22,33 +22,9 @@ y_send_indices = []
 spline_scores = []
 spline_states = []
 
-# 2019-03-25 15:59:01.253 - AGENT - MainThread - INFO - PLOT_QUEUE - 1553525941.7687411 - NEW_FILE - 49
-# 2019-03-25 15:59:02.253 - AGENT - MainThread - INFO - PLOT_QUEUE - 1553525942.1522071 - POP_PREPROCESS - 17
-# 2019-03-25 15:59:02.253 - AGENT - MainThread - INFO - PLOT_QUEUE - 1553525942.2393758 - POP_PREPROCESS - 18
-# 2019-03-25 15:59:02.253 - AGENT - MainThread - INFO - PLOT_QUEUE - 1553525942.253982 - POP_SEND - 49
+from haste.desktop_agent.benchmarking.benchmarking_analysis_config import get_run_streamid_tag_filename_grepped
+RUN, stream_id, tag, filename, filename_grepped = get_run_streamid_tag_filename_grepped()
 
-run = None
-
-#input()
-
-# run = '2019_04_29-03'
-#stream_id = 'agent_log_2019_04_29__10_29_35_trash'#
-
-run = '11_fri_am'
-#stream_id = 'agent_log_2019_03_29__11_18_21_trash'
-stream_id = 'agent_log_2019_03_29__11_18_21_trash'
-#stream_id = 'agent_log_2019_03_29__11_30_37_trash'
-
-stream_id = stream_id.replace('agent_log_', '')
-stream_id = stream_id.replace('.log', '')
-
-if run is not None:
-    filename = f'logs/{run}/agent_log_{stream_id}.log'
-else:
-    filename = f'../../../logs/agent_log_{stream_id}.log'
-
-if not filename.endswith('.log'):
-    filename += '.log'
 
 print(os.getcwd())
 

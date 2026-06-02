@@ -7,6 +7,8 @@ import logging
 from haste.desktop_agent import config
 from haste.desktop_agent.config import EXTENSION, TARGET_DIR, FREQUENCY
 
+# Microscope simulator.
+
 if __name__ == '__main__':
     SOURCE_DIR = sys.argv[1]
 

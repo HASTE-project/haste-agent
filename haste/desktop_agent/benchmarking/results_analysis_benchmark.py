@@ -3,15 +3,14 @@ import pandas as pd
 from haste.desktop_agent.benchmarking.__main__ import CONFIGS
 import matplotlib.pyplot as plt
 
-#RUN = '2019_05_08-01'
-RUN = '11_fri_am'
-#RUN = 'foo3'
+from haste.desktop_agent.benchmarking.benchmarking_analysis_config import get_run_streamid_tag_filename_grepped
+RUN, stream_id, tag, filename, filename_grepped = get_run_streamid_tag_filename_grepped()
 
 # grep Queue_is_empty *.log > grepped.txt
 
 # agent_log_2019_03_24__01_07_06_trash.log:2019-03-24 01:12:22.243 - AGENT - MainThread - INFO - Queue_is_empty. Duration since first event: 311.5138850212097 - total_bytes_sent: 315629743
 
-with open(f'logs/{RUN}/grepped.txt') as f:
+with open(filename_grepped) as f:
     lines = f.readlines()
     lines.sort()  # timestamp of each run at the start of the filename
     # assert len(lines) == 25

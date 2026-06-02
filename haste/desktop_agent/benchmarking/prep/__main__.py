@@ -13,9 +13,6 @@ def to_greyscale(input_filename, output_filename):
     t_end = time.time()
     print(t_end - t_start)
 
-
-# print(filenames)
-
 def convert_all():
     for filename in filenames_orig:
         original_filename = benchmarking_config.ORIGINAL_DIR + filename
@@ -28,4 +25,6 @@ def convert_all():
 
 
 if __name__ == '__main__':
+
+    # Prepares original dataset by converting all PNGs to greyscale.
     convert_all()

@@ -1,19 +1,33 @@
 import os
 import time
+from os.path import sep
 
 import pandas as pd
 
+
+dtypes={
+    'filename': "string",
+    'dur_load_image_to_np': "float64",
+    'dur_flood_fill': "float64",
+    'duration_total': "float64",
+    'input_file_size_bytes': "float64",
+    'output_file_size_bytes': "float64",
+}
+names=[
+    'filename',
+    'dur_load_image_to_np',
+    'dur_flood_fill',
+    'duration_total',
+    'input_file_size_bytes',
+    'output_file_size_bytes',
+],
+
+path = os.path.expanduser('~/Documents/_RESEARCH_AND_LEARNING/p-message-size-aware/code-message-size-aware/vironova-image-compression/results/viron_2019_02_04__11_34_55.csv')
+
 csv_results = pd.read_csv(
-    os.path.expanduser('~/Documents/_RESEARCH_AND_LEARNING/p-message-size-aware/code-message-size-aware/vironova-image-compression/results/viron_2019_02_04__11_34_55.csv'),
-    header=None,
-    names=[
-        'filename',
-        'dur_load_image_to_np',
-        'dur_flood_fill',
-        'duration_total',
-        'input_file_size_bytes',
-        'output_file_size_bytes',
-    ])
+    path,
+    sep=",",
+    header=0)
 
 
 def get_golden_prio_for_filename(filename):
@@ -23,7 +37,6 @@ def get_golden_prio_for_filename(filename):
     row_as_series = csv_results.loc[csv_results['filename'] == filename].squeeze()
 
     # filename,dur_load_image_to_np,dur_flood_fill,duration_total,input_file_size_bytes,output_file_size_bytes
-
 
     result = (row_as_series['input_file_size_bytes'] - row_as_series['output_file_size_bytes']) / row_as_series[
         'duration_total']
@@ -37,4 +50,4 @@ def get_golden_prio_for_filename(filename):
 
 if __name__ == '__main__':
     result = get_golden_prio_for_filename('strm_2019_02_04__11_34_55_vironova_ts_1549276991.6418386.png')
-    print(result)
+    #print(result)

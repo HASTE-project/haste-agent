@@ -1,9 +1,12 @@
 # from haste.desktop_agent.config import _BASE_DIR
 
+# Settings for running the benchmarking -- generation of plots etc. is done in results_analysis_*
 # This file needs to be modified as per the README.md
 
-# This is the directory for the original images, as downloaded from https://doi.org/10.17044/scilifelab.12771614.v1.
+
 import os
+
+# Images downloaded from https://doi.org/10.17044/scilifelab.12771614.v1.
 
 # Base working directory:
 #_BASE_DIR = os.path.expanduser('~/haste_agent_benchmarking_images')

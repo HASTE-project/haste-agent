@@ -5,13 +5,13 @@ from haste.desktop_agent import golden
 from haste.desktop_agent.benchmarking.__main__ import CONFIGS
 import matplotlib.pyplot as plt
 
-# grep Queue_is_empty *.log
+from haste.desktop_agent.benchmarking.benchmarking_analysis_config import get_run_streamid_tag_filename_grepped
+RUN, stream_id, tag, filename, filename_grepped = get_run_streamid_tag_filename_grepped()
+
 from haste.desktop_agent.config import QUIT_AFTER
 
 import numpy as np
 from scipy.interpolate import interp1d
-
-
 
 COL_INDEX_FILE_INDEX = 0
 COL_INDEX_TIME_NEW_FILE = 1
@@ -37,32 +37,6 @@ queue_length_y_length = []
 def last_queue_length_y_length():
     return queue_length_y_length[-1] if len(queue_length_y_length) > 0 else 0
 
-# 2019-03-25 15:59:01.253 - AGENT - MainThread - INFO - PLOT_QUEUE - 1553525941.7687411 - NEW_FILE - 49
-# 2019-03-25 15:59:02.253 - AGENT - MainThread - INFO - PLOT_QUEUE - 1553525942.1522071 - POP_PREPROCESS - 17
-# 2019-03-25 15:59:02.253 - AGENT - MainThread - INFO - PLOT_QUEUE - 1553525942.2393758 - POP_PREPROCESS - 18
-# 2019-03-25 15:59:02.253 - AGENT - MainThread - INFO - PLOT_QUEUE - 1553525942.253982 - POP_SEND - 49
-
-
-#input()
-
-# run = '2019_04_29-03'
-#stream_id = 'agent_log_2019_04_29__10_29_35_trash'#
-
-run = '11_fri_am'
-#stream_id = 'agent_log_2019_03_29__11_18_21_trash'
-stream_id = 'agent_log_2019_03_29__11_18_21_trash'
-#stream_id = 'agent_log_2019_03_29__11_30_37_trash'
-
-stream_id = stream_id.replace('agent_log_', '')
-stream_id = stream_id.replace('.log', '')
-
-if run is not None:
-    filename = f'logs/{run}/agent_log_{stream_id}.log'
-else:
-    filename = f'../../../logs/agent_log_{stream_id}.log'
-
-if not filename.endswith('.log'):
-    filename += '.log'
 
 print(os.getcwd())
 
@@ -70,7 +44,6 @@ events = np.zeros((QUIT_AFTER, 5))
 
 first_time = -1
 
-# with open(f'logs/2_tues_am_office/agent_log_2019_03_26__10_10_21_trash.log') as f:
 with open(filename) as f:
     for line in f.readlines():
 

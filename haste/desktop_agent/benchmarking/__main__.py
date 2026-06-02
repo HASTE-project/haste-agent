@@ -46,7 +46,7 @@ async def main():
             cmd = [sys.executable,
                    '-m', 'haste.desktop_agent',
                    '--include', haste.desktop_agent.config.EXTENSION,
-                   '--tag', 'trash',
+                   '--tag', 'tag',
                    '--host', 'haste-gateway.benblamey.com:80',
                    '--username', '??????',
                    '--password', '??????',
