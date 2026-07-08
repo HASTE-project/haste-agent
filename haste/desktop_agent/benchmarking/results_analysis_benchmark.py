@@ -3,6 +3,8 @@ import pandas as pd
 from haste.desktop_agent.benchmarking.__main__ import CONFIGS
 import matplotlib.pyplot as plt
 
+
+
 from haste.desktop_agent.benchmarking.benchmarking_analysis_config import get_run_streamid_tag_filename_grepped
 RUN, stream_id, tag, filename, filename_grepped = get_run_streamid_tag_filename_grepped()
 
@@ -49,23 +51,26 @@ df = pd.DataFrame(data,
 
 
 
-plt.clf()
+#plt.clf()
 boxes = [
 
     df['time_taken'][(df['count_preproc_threads'] == 0) & (df['splines_enabled'] == False) & (df['source_dir'] == 'greyscale')],
-
-    df['time_taken'][(df['count_preproc_threads'] == 1) & (df['splines_enabled'] == True) & (df['source_dir'] == 'greyscale')],
-    df['time_taken'][(df['count_preproc_threads'] == 2) & (df['splines_enabled'] == True) & (df['source_dir'] == 'greyscale')],
-    df['time_taken'][(df['count_preproc_threads'] == 3) & (df['splines_enabled'] == True) & (df['source_dir'] == 'greyscale')],
 
     df['time_taken'][(df['count_preproc_threads'] == 1) & (df['splines_enabled'] == False) & (df['source_dir'] == 'greyscale')],
     df['time_taken'][(df['count_preproc_threads'] == 2) & (df['splines_enabled'] == False) & (df['source_dir'] == 'greyscale')],
     df['time_taken'][(df['count_preproc_threads'] == 3) & (df['splines_enabled'] == False) & (df['source_dir'] == 'greyscale')],
 
+    df['time_taken'][(df['count_preproc_threads'] == 1) & (df['splines_enabled'] == True) & (df['source_dir'] == 'greyscale')],
+    df['time_taken'][(df['count_preproc_threads'] == 2) & (df['splines_enabled'] == True) & (df['source_dir'] == 'greyscale')],
+    df['time_taken'][(df['count_preproc_threads'] == 3) & (df['splines_enabled'] == True) & (df['source_dir'] == 'greyscale')],
+
+
+
     df['time_taken'][(df['count_preproc_threads'] == 0) & (df['source_dir'] == 'ffill')],
 ]
 
 
+plt.figure(figsize=(7, 3))
 
 plt.boxplot(boxes,
                 #,
@@ -74,12 +79,12 @@ plt.boxplot(boxes,
                     # see benchmarking/__main__.py
 
                     'uponly',
-                    '1,s',
-                    '2,s',
-                     '3,s',
                     '1,r',
                     '2,r',
-                     '3,r',
+                    '3,r',
+                    '1,s',
+                    '2,s',
+                    '3,s',
                     'offline',
                 ], whis=(0, 100)
                 )
@@ -89,9 +94,8 @@ plt.grid(True, axis='y', linestyle='--', alpha=0.5)
 plt.ylabel('Makespan (seconds)')
 plt.xlabel('Configuration')
 
-
 #plt.show()
-plt.savefig(f'figures/{RUN}_0_boxwhisker_time_taken.png', dpi=600)
+plt.savefig(f'figures/{RUN}_0_boxwhisker_time_taken.png', dpi=600, bbox_inches="tight")
 
 quit()
 

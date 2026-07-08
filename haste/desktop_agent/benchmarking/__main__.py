@@ -3,7 +3,6 @@ import time
 import os
 import shutil
 import logging
-import haste.desktop_agent.config
 import sys
 import benchmarking_config
 

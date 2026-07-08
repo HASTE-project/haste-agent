@@ -1,12 +1,12 @@
 import os
 
-from haste.desktop_agent import golden
+from haste.desktop_agent.benchmarking import golden
 import matplotlib.pyplot as plt
 
 from haste.desktop_agent.benchmarking.benchmarking_analysis_config import get_run_streamid_tag_filename_grepped
 RUN, stream_id, tag, filename, filename_grepped = get_run_streamid_tag_filename_grepped()
 
-from haste.desktop_agent.config import QUIT_AFTER
+from haste.desktop_agent.benchmarking.config import QUIT_AFTER
 
 import numpy as np
 from scipy.interpolate import interp1d
@@ -349,6 +349,7 @@ import create_3d_plot
 
 if True: # print the golden NMSR as a scatter
     plt.clf()
+    plt.figure(figsize=(7, 3))
     capacity = QUIT_AFTER
     X2 = np.arange(0, capacity, 1)
     Y2 = golden_compressibility
@@ -358,11 +359,12 @@ if True: # print the golden NMSR as a scatter
     X2 = X2[start:end]
     Y2 = Y2[start:end]
     plt.plot(X2, Y2, marker='o')
-
+    plt.grid(True, axis='x', linestyle='--', alpha=0.5)
+    plt.grid(True, axis='y', linestyle='--', alpha=0.5)
     plt.xlabel(create_3d_plot.AXIS_LABEL_MESSAGE_INDEX)
     plt.ylabel(create_3d_plot.AXIS_LABEL_TRUE_NMSR)
 
-    plt.savefig(f'figures/{stream_id}.1.golden-simple.png')
+    plt.savefig(f'figures/{stream_id}.1.golden-simple.png', dpi=600, bbox_inches="tight")
     plt.clf()
 
 

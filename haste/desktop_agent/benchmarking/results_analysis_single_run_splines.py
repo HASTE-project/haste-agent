@@ -1,9 +1,9 @@
 import os
 
-from haste.desktop_agent import golden
+from haste.desktop_agent.benchmarking import golden
 
 # grep Queue_is_empty *.log
-from haste.desktop_agent.config import QUIT_AFTER
+from haste.desktop_agent.benchmarking.config import QUIT_AFTER
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.interpolate import interp1d
@@ -134,7 +134,7 @@ def fit_spline(known_scores):
 plt.clf()
 
 
-plt.figure(figsize=(7, 3.5), dpi=500)
+plt.figure(figsize=(7, 3.5), dpi=600)
 
 if False: # print the golden NMSR as a line
     X2 = np.arange(0, capacity, 1)
