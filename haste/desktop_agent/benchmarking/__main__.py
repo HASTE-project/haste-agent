@@ -37,8 +37,8 @@ async def main():
         for j, c in enumerate(CONFIGS):
             logging.info(f'Starting Benchmarking Run {i}.{j}')
 
-            proc_simulator = await asyncio.create_subprocess_exec(
-                sys.executable, '-m', 'haste.desktop_agent.simulator', c[1])
+            proc_microscope = await asyncio.create_subprocess_exec(
+                sys.executable, '-m', 'haste.desktop_agent.microscope', c[1])
 
             await asyncio.sleep(5)
 
@@ -57,7 +57,7 @@ async def main():
             logging.info(cmd)
             proc_agent = await asyncio.create_subprocess_exec(*cmd)
 
-            await proc_simulator.wait()
+            await proc_microscope.wait()
             await proc_agent.wait()
 
             logging.info(f'Finished Benchmarking Run {i}.{j}')

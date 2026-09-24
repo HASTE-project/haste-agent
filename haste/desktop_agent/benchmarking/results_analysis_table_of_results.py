@@ -29,21 +29,22 @@ def std(xs):
     m = mean(xs)
     return (sum((x - m) ** 2 for x in xs) / len(xs)) ** 0.5  # population std
 
-# build LaTeX table
-lines = []
-lines.append(r"\begin{tabular}{lrrrr}")
-lines.append(r"\hline")
-lines.append(r"label & h2 & h3 & h4 & h5 \\")  # placeholder headers
-lines.append(r"\hline")
+if __name__ == "__main__":
+    # build LaTeX table
+    lines = []
+    lines.append(r"\begin{tabular}{lrrrr}")
+    lines.append(r"\hline")
+    lines.append(r"label & h2 & h3 & h4 & h5 \\")  # placeholder headers
+    lines.append(r"\hline")
 
-for label, row in zip(labels, times):
-    mn = min(row)
-    mx = max(row)
-    mu = mean(row)
-    sd = std(row)
-    lines.append(f"{label} & {mn:.2f} & {mx:.2f} & {mu:.2f} & {sd:.2f} \\\\")
+    for label, row in zip(labels, times):
+        mn = min(row)
+        mx = max(row)
+        mu = mean(row)
+        sd = std(row)
+        lines.append(f"{label} & {mn:.2f} & {mx:.2f} & {mu:.2f} & {sd:.2f} \\\\")
 
-lines.append(r"\hline")
-lines.append(r"\end{tabular}")
+    lines.append(r"\hline")
+    lines.append(r"\end{tabular}")
 
-print("\n".join(lines))
+    print("\n".join(lines))
