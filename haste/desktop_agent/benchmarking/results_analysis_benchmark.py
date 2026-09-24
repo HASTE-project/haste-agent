@@ -85,7 +85,7 @@ plt.boxplot(boxes,
                     '1,s',
                     '2,s',
                     '3,s',
-                    'offline',
+                    'all',
                 ], whis=(0, 100)
                 )
 
