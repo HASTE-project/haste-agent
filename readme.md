@@ -7,9 +7,21 @@ The tool demonstrates a novel approach for smart prioritization of processing ta
 Processing is prioritized locally (at the edge) where it is predicted to yield the greatest reduction in message size, with other work left for the cloud.
 This yields a mimimum stream-processing makespan in cases where overall throughput is bound by upload bandwidth. 
 
-In its simplest configuration, it simply monitors a directory for new files, then performs a HTTP POST for each new file. The novelty is in smart prioritization of a file-size reducing local operator.
+To appear:
 
-** Note: this branch is intended only for reproducibility of the benchmarking. **
+```bibtex
+@inproceedings{Blamey2026NMSR,
+  author    = {Blamey, Ben and Sintorn, Ida-Maria and Toor, Salman and Hellander, Andreas},
+  title     = {Optimized Task Offloading Using NMSR Priority-Queues for Scientific Stream Processing},
+  booktitle = {Proceedings of IEEE CloudCom 2026},
+  year      = {2026},
+  month     = {oct},
+  publisher = {IEEE},
+  address   = {Paris, France}
+}
+```
+
+In its simplest configuration, it simply monitors a directory for new files, then performs a HTTP POST for each new file. The novelty is in smart prioritization of a file-size reducing local operator.
 
 ## Command Line Arguments
 
