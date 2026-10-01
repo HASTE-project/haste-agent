@@ -41,8 +41,7 @@ optional arguments:
 
 # To Run Benchmarking
 
-Please follow the steps [instructions on the benchmarking-results branch](https://github.com/HASTE-project/haste-agent/tree/benchmarking-results), which was used to generate the results for the paper.
-
+Run benchmarking use the 'master' branch.
 
 # Contact
 
