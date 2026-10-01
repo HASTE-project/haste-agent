@@ -1,7 +1,5 @@
 # HASTE Desktop Agent
 
-Desktop client which watches a directory and streams new/modified files to HASTE. Intended for use with the HASTE Cloud Gateway (https://github.com/HASTE-project/haste-gateway)
-Part of the HASTE Toolkit for intelligent stream-processing of life science datasets.
 
 The tool demonstrates a novel approach for smart prioritization of processing tasks for computation at the cloud edge.
 Processing is prioritized locally (at the edge) where it is predicted to yield the greatest reduction in message size, with other work left for the cloud.
@@ -20,6 +18,9 @@ To appear:
   address   = {Paris, France}
 }
 ```
+
+Desktop client which watches a directory and streams new/modified files to HASTE. Intended for use with the HASTE Cloud Gateway (https://github.com/HASTE-project/haste-gateway)
+Part of the HASTE Toolkit for intelligent stream-processing of life science datasets.
 
 In its simplest configuration, it simply monitors a directory for new files, then performs a HTTP POST for each new file. The novelty is in smart prioritization of a file-size reducing local operator.
 
